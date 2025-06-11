@@ -477,10 +477,23 @@ class EmailNotifier:
         <html>
         <body>
             <h2>New Candidate Application</h2>
-            <p><strong>Position:</strong> {company.get('position')}</p>
-            <p><strong>Company:</strong> {company.get('company')}</p>
+            <p><strong>Position:</strong> {company.get('position', 'N/A')}</p>
+            <p><strong>Company:</strong> {company.get('company', 'N/A')}</p>
 
             <h3>Candidate Information</h3>
             <ul>
-                <li><strong>Name:</strong> {candidate['name']}</li>
-                <li><strong>Title:
+                <li><strong>Name:</strong> {candidate.get('name', 'N/A')}</li>
+                <li><strong>Title:</strong> {candidate.get('title', 'N/A')}</li>
+                <li><strong>Email:</strong> {candidate.get('email', 'N/A')}</li>
+                <li><strong>Phone:</strong> {candidate.get('phone', 'N/A')}</li>
+            </ul>
+
+            <h3>Message</h3>
+            <p>{notification_data.get('message', 'No additional message provided.')}</p>
+
+            <p>Please log in to the coBoarding platform to view the full candidate profile and respond.</p>
+            
+            <p>Best regards,<br>The coBoarding Team</p>
+        </body>
+        </html>
+        """
