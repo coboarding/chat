@@ -113,7 +113,6 @@ force_grid_wrap = 0
 use_parentheses = true
 ensure_newline_before_comments = true
 
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
@@ -121,11 +120,11 @@ python_functions = ["test_*"]
 addopts = "-v --cov=app --cov-report=term-missing"
 asyncio_mode = "auto"
 
-[coverage:run]
+[tool.coverage.run]
 source = ["app"]
 omit = ["app/tests/*", "app/__main__.py"]
 
-[coverage:report]
+[tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
@@ -136,9 +135,9 @@ exclude_lines = [
     "if TYPE_CHECKING:",
 ]
 
-[coverage:html]
+[tool.coverage.html]
 directory = "htmlcov"
 title = "coBoarding Test Coverage"
 
-[coverage:xml]
+[tool.coverage.xml]
 output = "coverage.xml"
