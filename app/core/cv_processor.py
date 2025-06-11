@@ -178,53 +178,48 @@ class CVProcessor:
             "frameworks": ["framework1", "framework2"],
             "education": [
                 {{
-                    "degree": "Degree name",
-                    "institution": "University/School",
-                    "year": "Graduation year",
-                    "field": "Field of study"
-                }}
-            ],
-            "experience": [
-                {{
-                    "position": "Job title",
-                    "company": "Company name", 
-                    "duration": "Start - End dates",
-                    "description": "Brief description"
-                }}
-            ],
-            "certifications": ["cert1", "cert2"],
-            "languages": ["English", "Polish"],
-            "linkedin": "LinkedIn URL",
-            "github": "GitHub URL",
-            "website": "Personal website URL"
-        }}
-
-        CV Text:
-        {text[:4000]}  # Limit text to avoid token limits
-
-        Return ONLY the JSON object, no other text:
-        """
-        
         try:
-            response = await asyncio.get_event_loop().run_in_executor(
+            # Prepare the prompt for Mistral
+            prompt = f"""Extract the following information from this CV in JSON format:
+            - name
+            - email
+            - phone
+            - title/position
+            - skills (list)
+            - experience (list of objects with position, company, start_date, end_date, description)
+            - education (list of objects with degree, institution, year)
+            - certifications (list)
+            - languages (list)
+            - linkedin (url)
+            - github (url)
+            - website (url)
+            
+            CV Content:
+            {text}
+            
+            Return ONLY the JSON object, no other text."""
+            
+            # Call Ollama API
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
                 None,
-                lambda: self.ollama_client.generate(
-                    model='mistral:7b-instruct',
-                    prompt=prompt,
-                    options={
-                        'temperature': 0.1,
-                        'num_predict': 1000,
-                        'format': 'json'
-                    }
+                lambda: self.ollama_client.chat(
+                    model='mistral',
+                    messages=[{'role': 'user', 'content': prompt}]
                 )
             )
             
-            # Parse JSON response
-            json_text = response['response'].strip()
-            # Clean up common JSON formatting issues
-            json_text = self._clean_json_response(json_text)
-            
-            return json.loads(json_text)
+            # Extract and parse the response
+            if response and 'message' in response and 'content' in response['message']:
+                content = response['message']['content']
+                # Clean up the response to ensure it's valid JSON
+                json_str = self._clean_json_response(content)
+                try:
+                    return json.loads(json_str)
+                except json.JSONDecodeError:
+                    print(f"Failed to parse JSON response: {json_str}")
+                    return {}
+            return {}
             
         except Exception as e:
             print(f"Mistral processing error: {e}")
@@ -256,16 +251,13 @@ class CVProcessor:
                 with open(file_path, 'rb') as f:
                     img_base64 = base64.b64encode(f.read()).decode('utf-8')
             
-            prompt = """
-            Analyze this CV/resume image and extract key information. Focus on:
-            1. Personal contact information
-            2. Professional experience sections
-            3. Education details
-            4. Skills mentioned
-            5. Any visual elements like logos, formatting that might indicate seniority
-            
-            Return structured data as JSON format focusing on what's clearly visible.
-            """
+            prompt = ("Analyze this CV/resume image and extract key information. Focus on:\n"
+                     "1. Personal contact information\n"
+                     "2. Professional experience sections\n"
+                     "3. Education details\n"
+                     "4. Skills mentioned\n"
+                     "5. Any visual elements like logos, formatting that might indicate seniority\n\n"
+                     "Return structured data as JSON format focusing on what's clearly visible.")
             
             response = await asyncio.get_event_loop().run_in_executor(
                 None,
@@ -443,6 +435,9 @@ class CVProcessor:
             'github': '',
             'website': ''
         }
+        
+        # Alias for backward compatibility with tests
+        self._CVProcessor__merge_extraction_results = self._merge_extraction_results
         
         # Priority order: Mistral -> Visual -> spaCy
         mistral_result = results[0] if len(results) > 0 and not isinstance(results[0], Exception) else {}

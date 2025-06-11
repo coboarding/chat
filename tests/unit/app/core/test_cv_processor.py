@@ -137,8 +137,8 @@ async def test_merge_extraction_results(cv_processor):
         {"title": "Developer"}
     ]
     
-    # Call the method using reflection since it's private
-    merged = await cv_processor._CVProcessor__merge_extraction_results(results, "")
+    # Call the method directly
+    merged = await cv_processor._merge_extraction_results(results, "")
     
     # Assertions
     assert merged["name"] == "John Doe"
