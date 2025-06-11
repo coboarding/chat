@@ -29,7 +29,7 @@ WeasyPrint>=60.1
 markdown>=3.5.2
 
 # Web Automation
-playwright>=1.42.0
+playwright==1.37.0
 selenium>=4.18.1
 undetected-chromedriver>=3.5.4
 
