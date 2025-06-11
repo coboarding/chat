@@ -1,5 +1,10 @@
 ---
 # Tasks for webserver role
+- name: Get home directory
+  ansible.builtin.shell: echo $HOME
+  register: home_dir
+  changed_when: false
+
 - name: Check if Nginx is installed
   ansible.builtin.shell: which nginx || echo "not installed"
   register: nginx_check
@@ -11,18 +16,18 @@
 
 - name: Create web content directory
   ansible.builtin.file:
-    path: "{{ ansible_env.HOME }}/ansible_demo/www"
+    path: "{{ home_dir.stdout }}/ansible_demo/www"
     state: directory
     mode: '0755'
 
 - name: Create test HTML file
   ansible.builtin.template:
     src: index.html.j2
-    dest: "{{ ansible_env.HOME }}/ansible_demo/www/index.html"
+    dest: "{{ home_dir.stdout }}/ansible_demo/www/index.html"
     mode: '0644'
 
 - name: Create Nginx configuration file
   ansible.builtin.template:
     src: nginx.conf.j2
-    dest: "{{ ansible_env.HOME }}/ansible_demo/nginx.conf"
+    dest: "{{ home_dir.stdout }}/ansible_demo/nginx.conf"
     mode: '0644'
