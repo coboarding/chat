@@ -41,7 +41,7 @@ __all__ = [
 ]
 
 __version__ = '1.0.0'
-from .connection import (
+from app.database.connection import (
     init_database,
     close_database,
     get_db_session,

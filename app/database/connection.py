@@ -1403,6 +1403,119 @@ async def anonymize_candidate_data(session: AsyncSession, candidate_id: str):
         raise
 
 
+async def export_candidate_data(session: AsyncSession, candidate_id: str) -> dict:
+    """
+    Export all data related to a candidate in a structured format for GDPR compliance.
+    
+    Args:
+        session: Database session
+        candidate_id: ID of the candidate whose data to export
+        
+    Returns:
+        dict: A dictionary containing all the candidate's data in a structured format
+    """
+    from sqlalchemy import select
+    from .models import (
+        Candidate, Application, Notification, AuditLog
+    )
+    from datetime import datetime
+    import json
+    
+    try:
+        # Get candidate data
+        stmt = select(Candidate).where(Candidate.id == candidate_id)
+        result = await session.execute(stmt)
+        candidate = result.scalars().first()
+        
+        if not candidate:
+            return {"error": "Candidate not found"}
+        
+        # Get candidate's applications
+        app_stmt = (
+            select(Application)
+            .where(Application.candidate_id == candidate_id)
+            .order_by(Application.created_at.desc())
+        )
+        app_result = await session.execute(app_stmt)
+        applications = app_result.scalars().all()
+        
+        # Get candidate's notifications
+        notif_stmt = (
+            select(Notification)
+            .where(Notification.recipient_id == candidate_id)
+            .order_by(Notification.created_at.desc())
+        )
+        notif_result = await session.execute(notif_stmt)
+        notifications = notif_result.scalars().all()
+        
+        # Get audit logs related to the candidate
+        audit_stmt = (
+            select(AuditLog)
+            .where(AuditLog.target_id == candidate_id)
+            .order_by(AuditLog.created_at.desc())
+        )
+        audit_result = await session.execute(audit_stmt)
+        audit_logs = audit_result.scalars().all()
+        
+        # Create the export data structure
+        export_data = {
+            "exported_at": datetime.utcnow().isoformat(),
+            "candidate": {
+                "id": str(candidate.id),
+                "email": candidate.email,
+                "first_name": candidate.first_name,
+                "last_name": candidate.last_name,
+                "phone_number": candidate.phone_number,
+                "created_at": candidate.created_at.isoformat() if candidate.created_at else None,
+                "updated_at": candidate.updated_at.isoformat() if candidate.updated_at else None,
+                "last_login_at": candidate.last_login_at.isoformat() if candidate.last_login_at else None,
+                "is_active": candidate.is_active,
+                "metadata": candidate.metadata or {}
+            },
+            "applications": [
+                {
+                    "id": str(app.id),
+                    "job_listing_id": str(app.job_listing_id),
+                    "status": app.status,
+                    "created_at": app.created_at.isoformat(),
+                    "updated_at": app.updated_at.isoformat() if app.updated_at else None,
+                    "metadata": app.metadata or {}
+                }
+                for app in applications
+            ],
+            "notifications": [
+                {
+                    "id": str(notif.id),
+                    "type": notif.notification_type,
+                    "title": notif.title,
+                    "message": notif.message,
+                    "status": notif.status,
+                    "created_at": notif.created_at.isoformat(),
+                    "read_at": notif.read_at.isoformat() if notif.read_at else None,
+                    "metadata": notif.metadata or {}
+                }
+                for notif in notifications
+            ],
+            "audit_logs": [
+                {
+                    "id": str(log.id),
+                    "event_type": log.event_type,
+                    "details": log.details or {},
+                    "ip_address": log.ip_address,
+                    "user_agent": log.user_agent,
+                    "created_at": log.created_at.isoformat()
+                }
+                for log in audit_logs
+            ]
+        }
+        
+        return export_data
+        
+    except Exception as e:
+        logger.error(f"Error exporting data for candidate {candidate_id}: {str(e)}")
+        raise
+
+
 # Database health monitoring
 async def get_connection_pool_status() -> dict:
     """Get connection pool status for monitoring"""
