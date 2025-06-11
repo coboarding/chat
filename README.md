@@ -390,3 +390,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Built with ❤️ for the European tech community**
 
 *Transform your hiring process from weeks to hours with AI-powered automation and real-time candidate engagement.*
+

@@ -1,0 +1,62 @@
+{
+    "cv_upload_test": {
+      "endpoint": "POST /api/cv/upload",
+      "content_type": "multipart/form-data",
+      "expected_response": {
+        "session_id": "session_test_001",
+        "success": true,
+        "processing_time": 15.3,
+        "cv_data": {
+          "name": "Test User",
+          "email": "test@example.com",
+          "skills": ["Python", "Django", "React"]
+        }
+      }
+    },
+    
+    "job_matching_test": {
+      "endpoint": "POST /api/jobs/match",
+      "request_body": {
+        "session_id": "session_test_001",
+        "include_remote": true,
+        "location_preference": "Berlin"
+      },
+      "expected_response": {
+        "matches": [
+          {
+            "id": "job_001",
+            "company": "TechStart Berlin",
+            "match_score": 0.92,
+            "matching_skills": ["Python", "Django"]
+          }
+        ],
+        "total_matches": 1
+      }
+    },
+    
+    "chat_message_test": {
+      "endpoint": "POST /api/chat/message",
+      "request_body": {
+        "message": "I'm interested in this position",
+        "company_id": "job_001", 
+        "session_id": "session_test_001"
+      },
+      "expected_response": {
+        "response": "Thank you for your interest! We'd like to learn more about your experience.",
+        "session_id": "session_test_001",
+        "company_id": "job_001"
+      }
+    },
+    
+    "health_check_test": {
+      "endpoint": "GET /health",
+      "expected_response": {
+        "status": "healthy",
+        "services": {
+          "redis": "healthy",
+          "ollama": "healthy",
+          "database": "healthy"
+        }
+      }
+    }
+  }

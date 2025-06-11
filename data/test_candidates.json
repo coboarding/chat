@@ -1,0 +1,150 @@
+{
+    "test_candidates": [
+      {
+        "session_id": "test_session_001",
+        "name": "Anna Kowalski",
+        "email": "anna.kowalski@example.com",
+        "phone": "+48987654321",
+        "location": "Warsaw, Poland",
+        "title": "React Developer",
+        "summary": "Frontend developer with 3 years of experience in React and modern web technologies. Passionate about creating user-friendly interfaces and optimizing web performance.",
+        "experience_years": 3,
+        "skills": ["React", "TypeScript", "JavaScript", "CSS", "HTML", "Next.js", "Tailwind CSS", "Jest"],
+        "programming_languages": ["JavaScript", "TypeScript", "Python"],
+        "frameworks": ["React", "Next.js", "Express.js"],
+        "education": [{
+          "degree": "Bachelor of Computer Science",
+          "institution": "Warsaw University of Technology",
+          "year": "2021",
+          "field": "Computer Science"
+        }],
+        "experience": [{
+          "position": "Frontend Developer",
+          "company": "WebStudio Warsaw",
+          "duration": "2021 - Present",
+          "description": "Developed responsive web applications using React and TypeScript"
+        }],
+        "certifications": ["React Developer Certification"],
+        "languages": ["Polish", "English"],
+        "linkedin": "https://linkedin.com/in/annakowalski",
+        "github": "https://github.com/annakowalski",
+        "website": "https://annakowalski.dev"
+      },
+      {
+        "session_id": "test_session_002", 
+        "name": "Miguel Rodriguez",
+        "email": "miguel.rodriguez@example.com",
+        "phone": "+34612345678",
+        "location": "Barcelona, Spain",
+        "title": "Data Scientist",
+        "summary": "Experienced data scientist with expertise in machine learning and deep learning. Strong background in Python, TensorFlow, and statistical analysis.",
+        "experience_years": 5,
+        "skills": ["Python", "TensorFlow", "PyTorch", "Pandas", "NumPy", "Scikit-learn", "SQL", "AWS"],
+        "programming_languages": ["Python", "R", "SQL", "Scala"],
+        "frameworks": ["TensorFlow", "PyTorch", "Django", "Flask"],
+        "education": [{
+          "degree": "PhD in Data Science",
+          "institution": "Universitat Politècnica de Catalunya",
+          "year": "2019",
+          "field": "Data Science and Machine Learning"
+        }],
+        "experience": [{
+          "position": "Senior Data Scientist",
+          "company": "AI Innovations Barcelona",
+          "duration": "2019 - Present",
+          "description": "Led ML projects for predictive analytics and recommendation systems"
+        }],
+        "certifications": ["AWS Machine Learning Specialist", "TensorFlow Developer"],
+        "languages": ["Spanish", "English", "Catalan"],
+        "linkedin": "https://linkedin.com/in/miguelrodriguez",
+        "github": "https://github.com/miguelrodriguez"
+      },
+      {
+        "session_id": "test_session_003",
+        "name": "Sophie Mueller",
+        "email": "sophie.mueller@example.com", 
+        "phone": "+4915123456789",
+        "location": "Berlin, Germany",
+        "title": "DevOps Engineer",
+        "summary": "DevOps engineer with 4 years of experience in cloud infrastructure, CI/CD, and container orchestration. Passionate about automation and reliability engineering.",
+        "experience_years": 4,
+        "skills": ["Docker", "Kubernetes", "AWS", "Terraform", "Jenkins", "Python", "Linux", "Monitoring"],
+        "programming_languages": ["Python", "Bash", "Go"],
+        "frameworks": ["Django", "Flask"],
+        "education": [{
+          "degree": "Master of Computer Engineering",
+          "institution": "Technical University of Berlin",
+          "year": "2020",
+          "field": "Computer Engineering"
+        }],
+        "experience": [{
+          "position": "DevOps Engineer",
+          "company": "CloudTech Berlin",
+          "duration": "2020 - Present",
+          "description": "Managed AWS infrastructure and implemented CI/CD pipelines"
+        }],
+        "certifications": ["AWS Solutions Architect", "Kubernetes Administrator"],
+        "languages": ["German", "English"],
+        "linkedin": "https://linkedin.com/in/sophiemueller",
+        "github": "https://github.com/sophiemueller"
+      }
+    ]
+  }
+  
+  ===========================================
+  
+  # data/webhook_test_payloads.json
+  {
+    "candidate_application_webhook": {
+      "event": "candidate_application",
+      "timestamp": "2024-12-01T14:30:22Z",
+      "candidate": {
+        "session_id": "session_abc123def456",
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "phone": "+48123456789",
+        "title": "Senior Python Developer",
+        "experience_years": 5,
+        "skills": ["Python", "Django", "PostgreSQL", "Docker", "AWS"],
+        "match_score": 0.92,
+        "location": "Warsaw, Poland"
+      },
+      "job": {
+        "id": "job_001",
+        "company": "TechStart Berlin", 
+        "position": "Senior Python Developer",
+        "location": "Berlin, Germany",
+        "remote": true
+      },
+      "application": {
+        "message": "I'm very interested in this position and believe my experience aligns perfectly with your requirements.",
+        "applied_at": "2024-12-01T14:30:22Z",
+        "urgent": true,
+        "response_deadline": "2024-12-02T14:30:22Z"
+      }
+    },
+    
+    "interview_scheduled_webhook": {
+      "event": "interview_scheduled",
+      "timestamp": "2024-12-01T16:00:00Z",
+      "candidate": {
+        "session_id": "session_abc123def456",
+        "name": "John Doe",
+        "email": "john.doe@example.com"
+      },
+      "job": {
+        "id": "job_001",
+        "company": "TechStart Berlin",
+        "position": "Senior Python Developer"
+      },
+      "interview": {
+        "id": "interview_001",
+        "type": "technical",
+        "scheduled_at": "2024-12-03T10:00:00Z",
+        "duration_minutes": 60,
+        "interviewer": "Sarah Johnson",
+        "meeting_link": "https://meet.google.com/abc-def-ghi",
+        "notes": "Technical interview focusing on Python and system design"
+      }
+    }
+  }

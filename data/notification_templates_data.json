@@ -1,0 +1,93 @@
+{
+    "email_variables": {
+      "candidate_notification": {
+        "company_name": "TechStart Berlin",
+        "position": "Senior Python Developer", 
+        "location": "Berlin, Germany",
+        "remote": true,
+        "urgent": true,
+        "match_score": 92,
+        "response_time": "2 hours",
+        "skills_matched": 8,
+        "employer_message": "Thank you for your application! We're impressed with your background and would like to schedule a technical interview this week.",
+        "next_steps": [
+          "Review the attached job description",
+          "Prepare for technical interview questions",
+          "Send us your availability for this week"
+        ],
+        "reply_link": "https://coboarding.com/chat/session_abc123/job_001",
+        "technical_questions": true,
+        "questions_link": "https://coboarding.com/questions/session_abc123/job_001",
+        "unsubscribe_link": "https://coboarding.com/unsubscribe/session_abc123",
+        "privacy_link": "https://coboarding.com/privacy"
+      },
+      
+      "employer_notification": {
+        "candidate_name": "John Doe",
+        "candidate_title": "Senior Python Developer",
+        "candidate_email": "john.doe@example.com",
+        "candidate_phone": "+48123456789",
+        "candidate_location": "Warsaw, Poland",
+        "candidate_experience": 5,
+        "company_name": "TechStart Berlin",
+        "position": "Senior Python Developer",
+        "urgent": true,
+        "match_score": 92,
+        "matching_skills": ["Python", "Django", "PostgreSQL", "Docker"],
+        "additional_skills": ["AWS", "Redis", "React", "TypeScript"],
+        "requirements_met": [
+          "5+ years Python experience",
+          "Django framework expertise", 
+          "PostgreSQL database skills",
+          "Docker containerization"
+        ],
+        "requirements_missing": [
+          "Kubernetes experience (nice to have)",
+          "Machine Learning knowledge (preferred)"
+        ],
+        "candidate_message": "I'm very interested in this position and believe my experience building scalable web applications aligns perfectly with your requirements. I'm particularly excited about working with your FinTech platform.",
+        "application_time": "2024-12-01T14:30:22Z",
+        "response_deadline": "2024-12-02T14:30:22Z",
+        "contact_link": "mailto:john.doe@example.com",
+        "schedule_interview_link": "https://calendly.com/techstart/interview",
+        "view_profile_link": "https://coboarding.com/candidate/session_abc123",
+        "technical_questions_available": true,
+        "send_questions_link": "https://coboarding.com/admin/send-questions/session_abc123",
+        "similar_candidates": true,
+        "similar_candidates_count": 3,
+        "view_all_link": "https://coboarding.com/admin/candidates",
+        "unsubscribe_link": "https://coboarding.com/admin/notifications",
+        "dashboard_link": "https://coboarding.com/admin/dashboard"
+      }
+    },
+    
+    "chat_scenarios": {
+      "welcome_candidate": {
+        "candidate_name": "John Doe",
+        "position": "Senior Python Developer",
+        "company_name": "TechStart Berlin",
+        "match_score": "92%",
+        "experience_years": 5,
+        "matching_skills": "Python, Django, PostgreSQL, Docker"
+      },
+      
+      "welcome_employer": {
+        "candidate_name": "John Doe",
+        "position": "Senior Python Developer",
+        "match_score": "92%",
+        "experience_years": 5,
+        "location": "Warsaw, Poland",
+        "application_time": "30 minutes ago",
+        "matching_skills_list": "• Python (5 years)\n• Django (4 years)\n• PostgreSQL (4 years)\n• Docker (3 years)",
+        "company_name": "TechStart Berlin"
+      },
+      
+      "technical_questions": {
+        "candidate_name": "John Doe",
+        "company_name": "TechStart Berlin",
+        "question_count": 3,
+        "questions_list": "1. Explain the difference between Django's select_related() and prefetch_related()\n2. How would you optimize a slow database query?\n3. Describe your approach to handling API rate limiting"
+      }
+    }
+  }
+  
