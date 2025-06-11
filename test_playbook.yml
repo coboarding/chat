@@ -1,0 +1,29 @@
+---
+# A simple Ansible playbook to test functionality
+- name: Test Ansible Playbook
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+
+  tasks:
+    - name: Print system information
+      debug:
+        msg: "Running on {{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+    - name: Get current date and time
+      command: date
+      register: date_output
+      changed_when: false
+
+    - name: Display date and time
+      debug:
+        msg: "Current date and time: {{ date_output.stdout }}"
+
+    - name: Check disk space
+      command: df -h
+      register: disk_space
+      changed_when: false
+
+    - name: Display disk space information
+      debug:
+        var: disk_space.stdout_lines

@@ -46,7 +46,7 @@ install:
 # Run the application
 .PHONY: run
 run:
-	$(PYTHON) -m streamlit run app/main.py
+	cd $(CURDIR) && $(PYTHON) -m streamlit run app/main.py
 
 # Run tests
 .PHONY: test

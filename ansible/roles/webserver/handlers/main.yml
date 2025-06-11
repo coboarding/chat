@@ -1,0 +1,7 @@
+---
+# Handlers for webserver role
+- name: Restart Nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
+  when: ansible_distribution == "Ubuntu"

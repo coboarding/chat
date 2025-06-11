@@ -9,13 +9,13 @@ import pandas as pd
 from typing import Dict, List, Optional
 
 # Core imports
-from core.cv_processor import CVProcessor
-from core.form_detector import FormDetector
-from core.automation_engine import AutomationEngine
-from core.chat_interface import ChatInterface
-from core.notification_service import NotificationService
-from database.models import CandidateSession, JobListing, Application
-from utils.gdpr_compliance import GDPRManager
+from app.core.cv_processor import CVProcessor
+from app.core.form_detector import FormDetector
+from app.core.automation_engine import AutomationEngine
+from app.core.chat_interface import ChatInterface
+from app.core.notification_service import NotificationService
+from app.database.models import CandidateSession, JobListing, Application
+from app.utils.gdpr_compliance import GDPRManager
 
 # Configuration
 st.set_page_config(

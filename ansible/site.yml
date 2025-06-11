@@ -1,0 +1,13 @@
+---
+# Main Ansible playbook that includes all roles
+- name: Web server configuration
+  hosts: webservers
+  become: yes
+  roles:
+    - webserver
+
+- name: Database server configuration
+  hosts: dbservers
+  become: yes
+  roles:
+    - database

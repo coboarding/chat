@@ -1,0 +1,4 @@
+---
+# Variables applied to all hosts
+ansible_python_interpreter: /usr/bin/python3
+env: development
