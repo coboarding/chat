@@ -39,18 +39,19 @@ setup:
 	python3 -m venv $(VENV)
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
-	$(PIP) install -r requirements-test.txt
+	@if [ -f requirements-test.txt ]; then $(PIP) install -r requirements-test.txt; fi
 	@echo "\n\033[1m✅ Setup complete! Activate virtual environment with:\033[0m\n\n  source $(VENV)/bin/activate\n"
 
 # Install Python dependencies
 .PHONY: install
 install:
 	$(PIP) install -r requirements.txt
+	@if [ -f requirements-test.txt ]; then $(PIP) install -r requirements-test.txt; fi
 
 # Run the application
 .PHONY: run
 run:
-	cd $(CURDIR) && $(PYTHON) -m streamlit run app/main.py
+	cd $(CURDIR) && $(PYTHON) -m streamlit run app/main.py --server.port=8501 --server.address=0.0.0.0
 
 # Test commands
 .PHONY: test
@@ -88,7 +89,7 @@ test-fast:  ## Run tests quickly without coverage
 
 # Linting and formatting
 .PHONY: lint
-lint:  ## Run all linters and formatters
+lint:
 	@echo "\n\033[1m🔍 Running linters and formatters...\033[0m"
 	$(PYTHON) -m flake8 app/ tests/
 	$(PYTHON) -m black --check app/ tests/
@@ -119,12 +120,13 @@ convert-cv:
 		echo "Error: INPUT variable not set. Usage: make convert-cv INPUT=path/to/cv.md [OUTPUT=path/to/output.pdf]"; \
 		exit 1; \
 	fi
-	$(PYTHON) scripts/convert_cv.py $(INPUT) $(OUTPUT)
+	@OUTPUT_FILE=$${OUTPUT:-$${INPUT%.md}.pdf}; \
+	$(PYTHON) scripts/convert_cv.py $(INPUT) $$OUTPUT_FILE
 
 # Docker commands
 .PHONY: docker-build
 docker-build:
-	docker-compose build
+	docker-compose build --no-cache
 
 .PHONY: docker-up
 docker-up:
