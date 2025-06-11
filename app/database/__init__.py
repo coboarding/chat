@@ -5,6 +5,7 @@ This module provides database models, connection utilities, and session manageme
 for the coBoarding speed hiring platform.
 """
 
+# Import models
 from .models import (
     Base,
     Candidate,
@@ -16,34 +17,67 @@ from .models import (
     UUIDMixin
 )
 
-from .connection import (
+# Import core database functionality
+from .core import (
     init_database,
     close_database,
     get_db_session,
     get_session,
     test_connection,
-    create_candidate,
-    get_candidate_by_session,
+    execute_raw_sql,
+    get_connection_pool_status
+)
+
+# Import candidate operations
+from .candidate_operations import (
     get_or_create_candidate_by_email,
     update_candidate_data,
-    get_job_listing,
-    create_application,
-    get_application,
-    update_application_status,
-    record_notification,
-    log_audit_event,
-    get_pending_notifications,
-    get_applications_for_candidate,
-    get_applications_for_job_listing,
-    get_overdue_applications,
-    get_expired_job_listings,
-    get_active_job_listings,
-    get_candidate_applications,
-    get_application_by_session_and_job,
+    create_candidate,
+    get_candidate_by_session,
     get_candidate_by_email,
     delete_candidate_data,
     anonymize_candidate_data,
-    export_candidate_data
+    export_candidate_data,
+    get_candidate_applications
+)
+
+# Import application operations
+from .application_operations import (
+    create_application,
+    get_application,
+    update_application_status,
+    get_applications_for_job_listing,
+    get_applications_for_candidate,
+    get_application_by_session_and_job,
+    get_overdue_applications
+)
+
+# Import job listing operations
+from .job_operations import (
+    get_job_listing,
+    get_active_job_listings,
+    get_expired_job_listings,
+    create_job_listing,
+    update_job_listing,
+    deactivate_job_listing,
+    search_job_listings
+)
+
+# Import notification operations
+from .notification_operations import (
+    record_notification,
+    update_notification_status,
+    get_pending_notifications,
+    get_notifications_for_recipient,
+    delete_old_notifications
+)
+
+# Import audit operations
+from .audit_operations import (
+    log_audit_event,
+    get_audit_logs,
+    get_user_activity_summary,
+    delete_old_audit_logs
 )
 
 __all__ = [
@@ -63,6 +97,8 @@ __all__ = [
     'get_db_session',
     'get_session',
     'test_connection',
+    'execute_raw_sql',
+    'get_connection_pool_status',
     
     # Candidate operations
     'create_candidate',
@@ -73,26 +109,38 @@ __all__ = [
     'delete_candidate_data',
     'anonymize_candidate_data',
     'export_candidate_data',
+    'get_candidate_applications',
     
     # Job listing operations
     'get_job_listing',
     'get_active_job_listings',
     'get_expired_job_listings',
+    'create_job_listing',
+    'update_job_listing',
+    'deactivate_job_listing',
+    'search_job_listings',
     
     # Application operations
     'create_application',
     'get_application',
+    'update_application_status',
     'get_applications_for_job_listing',
     'get_applications_for_candidate',
-    'get_active_job_listings',
-    'get_pending_notifications',
-    'log_audit_event',
-    'record_notification',
-    'update_application_status',
-    'get_overdue_applications',
-    'get_expired_job_listings',
-    'get_candidate_applications',
     'get_application_by_session_and_job',
+    'get_overdue_applications',
+    
+    # Notification operations
+    'record_notification',
+    'update_notification_status',
+    'get_pending_notifications',
+    'get_notifications_for_recipient',
+    'delete_old_notifications',
+    
+    # Audit operations
+    'log_audit_event',
+    'get_audit_logs',
+    'get_user_activity_summary',
+    'delete_old_audit_logs',
     
     # Notification operations
     'record_notification',
