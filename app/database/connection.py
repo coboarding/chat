@@ -772,6 +772,42 @@ async def get_application(session: AsyncSession, application_id: str):
     return result.scalars().first()
 
 
+async def get_applications_for_candidate(
+    session: AsyncSession, 
+    candidate_id: str,
+    limit: int = 100,
+    offset: int = 0,
+    status: str = None
+) -> list:
+    """
+    Get all applications for a specific candidate
+    
+    Args:
+        session: Database session
+        candidate_id: ID of the candidate
+        limit: Maximum number of applications to return
+        offset: Number of applications to skip
+        status: Optional status to filter applications by
+        
+    Returns:
+        list: List of Application objects
+    """
+    from .models import Application
+    from sqlalchemy.future import select
+    from sqlalchemy import and_
+    
+    query = select(Application).where(Application.candidate_id == candidate_id)
+    
+    if status:
+        query = query.where(Application.status == status)
+        
+    query = query.order_by(Application.created_at.desc())
+    query = query.limit(limit).offset(offset)
+    
+    result = await session.execute(query)
+    return result.scalars().all()
+
+
 async def get_job_listing(session: AsyncSession, job_id: str):
     """
     Get a job listing by ID
