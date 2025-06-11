@@ -772,6 +772,55 @@ async def get_application(session: AsyncSession, application_id: str):
     return result.scalars().first()
 
 
+async def get_overdue_applications(
+    session: AsyncSession,
+    days_overdue: int = 7,
+    limit: int = 100,
+    offset: int = 0
+) -> list:
+    """
+    Get applications that are overdue by a specified number of days
+    
+    Args:
+        session: Database session
+        days_overdue: Number of days after which an application is considered overdue
+        limit: Maximum number of applications to return
+        offset: Number of applications to skip
+        
+    Returns:
+        list: List of overdue Application objects with related job and candidate info
+    """
+    from .models import Application, JobListing, Candidate
+    from sqlalchemy.future import select
+    from sqlalchemy import and_, or_, func, desc
+    from datetime import datetime, timedelta
+    
+    # Calculate the cutoff date
+    cutoff_date = datetime.utcnow() - timedelta(days=days_overdue)
+    
+    # Build the query to find overdue applications
+    query = select(Application).join(
+        JobListing, Application.job_listing_id == JobListing.id
+    ).join(
+        Candidate, Application.candidate_id == Candidate.id
+    ).where(
+        and_(
+            Application.status.not_in(['rejected', 'withdrawn', 'hired']),
+            Application.updated_at <= cutoff_date,
+            or_(
+                JobListing.deadline.is_(None),
+                JobListing.deadline >= datetime.utcnow()
+            )
+        )
+    ).order_by(desc(Application.updated_at))
+    
+    # Apply pagination
+    query = query.limit(limit).offset(offset)
+    
+    result = await session.execute(query)
+    return result.scalars().all()
+
+
 async def get_applications_for_job_listing(
     session: AsyncSession,
     job_listing_id: str,
@@ -949,6 +998,50 @@ async def get_pending_notifications(session: AsyncSession, limit: int = 100):
     )
     result = await session.execute(stmt)
     return result.scalars().all()
+
+
+async def get_overdue_applications(session: AsyncSession, days_overdue: int = 1, limit: int = 100):
+    """
+    Retrieve applications that are overdue for a response
+    
+    Args:
+        session: Database session
+        days_overdue: Number of days after which an application is considered overdue
+        limit: Maximum number of applications to return
+        
+    Returns:
+        list: List of overdue applications
+    """
+    from sqlalchemy import select, and_, func
+    from datetime import datetime, timedelta
+    from .models import Application, JobListing, Candidate
+    
+    try:
+        # Calculate the cutoff date
+        cutoff_date = datetime.utcnow() - timedelta(days=days_overdue)
+        
+        # Build the query
+        stmt = (
+            select(Application)
+            .join(JobListing, Application.job_listing_id == JobListing.id)
+            .join(Candidate, Application.candidate_id == Candidate.id)
+            .where(
+                and_(
+                    Application.status == 'submitted',
+                    Application.created_at < cutoff_date,
+                    Application.responded_at.is_(None)
+                )
+            )
+            .order_by(Application.created_at.asc())
+            .limit(limit)
+        )
+        
+        result = await session.execute(stmt)
+        return result.scalars().all()
+        
+    except Exception as e:
+        logger.error(f"Error fetching overdue applications: {str(e)}")
+        raise
 
 
 # Database health monitoring
