@@ -1,0 +1,5 @@
+---
+# Variables for database role
+db_name: test_database
+db_user: admin
+db_password: password123

@@ -1,0 +1,29 @@
+-- Database schema for {{ db_name }}
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+-- Insert some sample data
+INSERT OR IGNORE INTO users (username, email) VALUES 
+    ('admin', 'admin@example.com'),
+    ('user1', 'user1@example.com'),
+    ('user2', 'user2@example.com');
+
+INSERT OR IGNORE INTO posts (user_id, title, content) VALUES
+    (1, 'Welcome to {{ website_title }}', 'This is the first post on our new site!'),
+    (2, 'Getting Started with Ansible', 'Ansible is a powerful automation tool...');
+
+-- Create an index for performance
+CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts (user_id);
