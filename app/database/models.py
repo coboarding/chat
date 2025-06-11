@@ -534,13 +534,88 @@ class AuditLog(Base, UUIDMixin, TimestampMixin):
             'response_status': self.response_status,
             'data_subject_id': self.data_subject_id,
             'legal_basis': self.legal_basis,
-            'retention_until': self.retention_until.isoformat(),
-            'created_at': self.created_at.isoformat()
         }
 
+
+class CandidateSession(Base, UUIDMixin, TimestampMixin):
+    """
+    Tracks candidate sessions for GDPR compliance and session management.
+    
+    This model stores session information for candidates, including login/logout times,
+    IP addresses, and user agents. It helps with security auditing and compliance.
+    """
+    __tablename__ = 'candidate_sessions'
+    
+    # Foreign key to the Candidate model
+    candidate_id = Column(UUID(as_uuid=True), ForeignKey('candidates.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Session information
+    session_token = Column(String(255), unique=True, nullable=False, index=True)
+    ip_address = Column(String(45), nullable=False)
+    user_agent = Column(Text)
+    device_info = Column(JSONB)
+    
+    # Session timestamps
+    login_at = Column(DateTime, default=func.now(), nullable=False)
+    last_activity_at = Column(DateTime, default=func.now(), nullable=False)
+    expires_at = Column(DateTime, nullable=False, index=True)
+    logout_at = Column(DateTime)
+    
+    # Session status
+    is_active = Column(Boolean, default=True, index=True)
+    logout_reason = Column(String(100))
+    
+    # GDPR and security
+    gdpr_consent = Column(Boolean, default=False)
+    gdpr_consent_version = Column(String(50))
+    gdpr_consent_date = Column(DateTime)
+    
+    # Relationships
+    candidate = relationship("Candidate", back_populates="sessions")
+    
+    # Indexes
+    __table_args__ = (
+        Index('idx_candidate_sessions_token', 'session_token', unique=True),
+        Index('idx_candidate_sessions_active', 'is_active', 'expires_at'),
+        Index('idx_candidate_sessions_candidate', 'candidate_id', 'is_active'),
+    )
+    
+    def is_expired(self) -> bool:
+        """Check if the session has expired."""
+        return datetime.utcnow() > self.expires_at
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary for API responses."""
+        return {
+            'id': str(self.id),
+            'candidate_id': str(self.candidate_id),
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'device_info': self.device_info or {},
+            'login_at': self.login_at.isoformat() if self.login_at else None,
+            'last_activity_at': self.last_activity_at.isoformat() if self.last_activity_at else None,
+            'expires_at': self.expires_at.isoformat() if self.expires_at else None,
+            'logout_at': self.logout_at.isoformat() if self.logout_at else None,
+            'is_active': self.is_active,
+            'logout_reason': self.logout_reason,
+            'gdpr_consent': self.gdpr_consent,
+            'gdpr_consent_version': self.gdpr_consent_version,
+            'gdpr_consent_date': self.gdpr_consent_date.isoformat() if self.gdpr_consent_date else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+# Add relationship to Candidate model
+Candidate.sessions = relationship(
+    "CandidateSession", 
+    back_populates="candidate",
+    cascade="all, delete-orphan"
+)
 
 # Indexes for performance optimization
 Index('idx_candidates_compound', Candidate.status, Candidate.expires_at)
 Index('idx_applications_compound', Application.status, Application.response_deadline, Application.match_score)
-Index('idx_job_listings_compound', JobListing.active, JobListing.urgent, JobListing.posted_date)
-Index('idx_notifications_compound', Notification.delivery_status, Notification.sent_at, Notification.next_retry_at)
+Index('idx_notifications_compound', Notification.delivery_status, Notification.sent_at)
+Index('idx_audit_logs_compound', AuditLog.action, AuditLog.created_at)
+Index('idx_candidate_sessions_compound', CandidateSession.is_active, CandidateSession.expires_at)

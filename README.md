@@ -96,8 +96,32 @@ nano .env  # Edit configuration as needed
 # Start the application
 make run
 
-# Run tests
+# Run all tests
 make test
+
+# Run unit tests only
+make test-unit
+
+# Run integration tests
+make test-integration
+
+# Run end-to-end tests
+make test-e2e
+
+# Run tests with coverage report
+make test-cov
+
+# Run fast tests (skip slow tests)
+make test-fast
+
+# Run linters and formatters
+make lint
+
+# Format code automatically
+make format
+
+# Run type checking
+make typecheck
 
 # Run with coverage report
 make cov

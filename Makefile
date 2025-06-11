@@ -52,23 +52,65 @@ install:
 run:
 	cd $(CURDIR) && $(PYTHON) -m streamlit run app/main.py
 
-# Run tests
+# Test commands
 .PHONY: test
-test:
+test:  ## Run all tests
+	@echo "\n\033[1m🚀 Running all tests...\033[0m"
 	$(PYTHON) -m pytest tests/ -v
 
-# Run linting
+.PHONY: test-unit
+test-unit:  ## Run unit tests only
+	@echo "\n\033[1m🔬 Running unit tests...\033[0m"
+	$(PYTHON) -m pytest tests/unit/ -v
+
+.PHONY: test-integration
+test-integration:  ## Run integration tests only
+	@echo "\n\033[1m🔗 Running integration tests...\033[0m"
+	$(PYTHON) -m pytest tests/integration/ -v
+
+.PHONY: test-e2e
+test-e2e:  ## Run end-to-end tests only
+	@echo "\n\033[1m🌐 Running end-to-end tests...\033[0m"
+	$(PYTHON) -m pytest tests/e2e/ -v
+
+.PHONY: test-cov
+test-cov:  ## Run tests with coverage report
+	@echo "\n\033[1m📊 Running tests with coverage...\033[0m"
+	$(PYTHON) -m pytest --cov=app --cov-report=term-missing --cov-report=html tests/
+
+.PHONY: cov
+cov: test-cov  ## Alias for test-cov
+
+.PHONY: test-fast
+test-fast:  ## Run tests quickly without coverage
+	@echo "\n\033[1m⚡ Running fast tests...\033[0m"
+	$(PYTHON) -m pytest tests/ -v --no-cov -m "not slow"
+
+# Linting and formatting
 .PHONY: lint
-lint:
-	@echo "\n\033[1m🔍 Running linters...\033[0m"
+lint:  ## Run all linters and formatters
+	@echo "\n\033[1m🔍 Running linters and formatters...\033[0m"
 	$(PYTHON) -m flake8 app/ tests/
 	$(PYTHON) -m black --check app/ tests/
 	$(PYTHON) -m isort --check-only app/ tests/
 
-# Run tests with coverage
-.PHONY: cov
-cov:
-	$(PYTHON) -m pytest --cov=app --cov-report=term-missing --cov-report=html tests/
+.PHONY: format
+format:  ## Format code automatically
+	@echo "\n\033[1m🎨 Formatting code...\033[0m"
+	$(PYTHON) -m black app/ tests/
+	$(PYTHON) -m isort app/ tests/
+
+# Type checking
+.PHONY: typecheck
+typecheck:  ## Run static type checking
+	@echo "\n\033[1m🔎 Running type checking...\033[0m"
+	$(PYTHON) -m mypy app/ tests/
+
+# Security scanning
+.PHONY: security
+security:  ## Run security checks
+	@echo "\n\033[1m🔒 Running security checks...\033[0m"
+	echo "TODO: Add security scanning commands"
 
 # Convert CV from Markdown to PDF
 .PHONY: convert-cv
