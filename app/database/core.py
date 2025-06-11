@@ -349,8 +349,19 @@ async def get_connection_pool_status() -> dict:
     
     pool = engine.pool
     
+    # Handle SQLite's NullPool which doesn't have the same methods
+    from sqlalchemy.pool import NullPool
+    if isinstance(pool, NullPool):
+        return {
+            "status": "active",
+            "pool_type": "NullPool",
+            "connections": "unknown",
+        }
+    
+    # For regular connection pools
     return {
         "status": "active",
+        "pool_type": pool.__class__.__name__,
         "size": pool.size(),
         "checked_out": pool.checkedout(),
         "overflow": pool.overflow(),
