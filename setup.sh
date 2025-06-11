@@ -113,16 +113,27 @@ echo "📚 Installing dependencies..."
 if [ $PYTHON_MAJOR -eq 3 ] && [ $PYTHON_MINOR -ge 13 ]; then
     echo "Using compatibility mode for Python 3.13+"
     # Create a temporary requirements file with compatible versions
-    grep -v "numpy" requirements.txt > requirements_temp.txt
-    echo "numpy<2.0.0" >> requirements_temp.txt
+    grep -v -E "numpy|botright" requirements.txt > requirements_temp.txt
+    echo "numpy==1.26.0" >> requirements_temp.txt
+    
+    # First install core dependencies without conflicting packages
+    echo "Installing core dependencies..."
     pip install -r requirements_temp.txt || {
-        echo "❌ Dependency installation failed. Some packages may not be compatible with Python $PYTHON_VERSION."
-        echo "Consider using Python 3.11 or 3.12 for best compatibility."
+        echo "❌ Core dependency installation failed."
         rm requirements_temp.txt
         exit 1
     }
+    
+    # Then try to install botright separately (it may fail, but that's ok)
+    echo "Attempting to install botright (optional)..."
+    pip install botright==0.4 || {
+        echo "⚠️ Botright installation skipped - this is optional and won't affect core functionality."
+    }
+    
     rm requirements_temp.txt
+    echo "✅ Dependencies installed with compatibility adjustments."
 else
+    echo "Installing all dependencies..."
     pip install -r requirements.txt || {
         echo "❌ Dependency installation failed."
         exit 1
