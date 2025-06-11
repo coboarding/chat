@@ -144,13 +144,6 @@ run:
 	@echo "\n\033[1mStarting application on port $(PORT)...\033[0m"
 	$(PYTHON) -m streamlit run app/main.py --server.port $(PORT)
 
-# Run in development mode with auto-reload
-.PHONY: dev
-dev:
-	@echo "\n\033[1mStarting development server with auto-reload...\033[0m"
-	STREAMLIT_DEVELOPMENT_MODE=true $(PYTHON) -m streamlit run app/main.py --server.port $(PORT) --server.runOnSave=true --server.enableCORS=false --server.enableXsrfProtection=false
-
-
 # Run the application
 .PHONY: run
 run:
