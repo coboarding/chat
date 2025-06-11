@@ -349,6 +349,49 @@ python app/main.py
 - **Black** for code formatting
 - **pytest** for testing
 
+### CV Tools
+
+Convert your CV from Markdown to PDF using the included script:
+
+```bash
+# Using the Makefile (recommended)
+make convert-cv INPUT=test/cv.md OUTPUT=test/cv.pdf
+
+# Or directly with Python
+python3 scripts/convert_cv.py test/cv.md test/cv.pdf
+```
+
+Features:
+- Clean, professional PDF output
+- Proper formatting of headings, lists, and links
+- Custom styling for better readability
+- Error handling for missing files
+
+### Makefile Commands
+
+We provide a comprehensive Makefile to simplify common development tasks:
+
+```bash
+# Setup and installation
+make setup           # Create virtual environment and install dependencies
+make install         # Install Python dependencies
+
+# Development
+make run             # Run the application
+make test            # Run tests
+make lint            # Run linters and formatters
+make cov             # Run tests with coverage report
+
+# Docker
+make docker-build    # Build Docker containers
+make docker-up       # Start all services
+make docker-down     # Stop all services
+make docker-logs     # View container logs
+
+# CV Tools
+make convert-cv INPUT=path/to/cv.md OUTPUT=path/to/output.pdf  # Convert CV to PDF
+```
+
 ### Pull Request Process
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/amazing-feature`)

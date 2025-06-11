@@ -6,7 +6,7 @@ Provides CV processing, form automation, and chat functionality
 
 from .cv_processor import CVProcessor
 from .form_detector import FormDetector, FormField, DetectionMethod
-from .automation_engine import AutomationEngine
+from .form_detector import AutomationEngine
 from .chat_interface import ChatInterface
 from .notification_service import NotificationService
 

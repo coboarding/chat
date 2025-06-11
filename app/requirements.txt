@@ -25,9 +25,9 @@ Pillow>=10.0.0
 pdf2image>=1.16.3
 
 # Web automation
-playwright>=1.40.0
+playwright==1.37.0  # Pinned to work with botright
 selenium>=4.15.0
-botright>=0.4.0
+botright==0.4  # Using specific version to avoid conflicts
 undetected-chromedriver>=3.5.4
 
 # Computer vision
