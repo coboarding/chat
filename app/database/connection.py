@@ -630,6 +630,26 @@ async def update_candidate_data(session: AsyncSession, candidate_id: str, update
     return True
 
 
+async def get_job_listing(session: AsyncSession, job_id: str):
+    """
+    Get a job listing by ID
+    
+    Args:
+        session: Database session
+        job_id: ID of the job listing to retrieve
+        
+    Returns:
+        JobListing or None: The job listing if found, None otherwise
+    """
+    from .models import JobListing
+    from sqlalchemy.future import select
+    
+    result = await session.execute(
+        select(JobListing).where(JobListing.id == job_id)
+    )
+    return result.scalars().first()
+
+
 async def create_candidate(session: AsyncSession, candidate_data: dict) -> str:
     """Create a new candidate record"""
     from .models import Candidate
