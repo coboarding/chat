@@ -226,8 +226,39 @@ class coBoarding:
         
         if st.sidebar.button("🔍 Detect Forms"):
             with st.spinner("Detecting forms on current page..."):
-                forms = asyncio.run(self.form_detector.detect_forms(url=target_url))
-                st.sidebar.success(f"Found {len(forms)} forms")
+                try:
+                    # Use a thread-safe way to run async code
+                    import nest_asyncio
+                    import asyncio
+                    
+                    # Apply nest_asyncio to allow nested event loops
+                    try:
+                        nest_asyncio.apply()
+                    except RuntimeError:
+                        # Already applied
+                        pass
+                        
+                    # Get or create an event loop
+                    try:
+                        loop = asyncio.get_event_loop()
+                    except RuntimeError:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                    
+                    # Initialize the browser first if needed
+                    loop.run_until_complete(self.form_detector.__class__.initialize_browser())
+                    
+                    # Run the detect_forms function
+                    forms = loop.run_until_complete(self.form_detector.detect_forms(url=target_url))
+                    
+                    if forms:
+                        st.sidebar.success(f"Found {len(forms)} forms")
+                    else:
+                        st.sidebar.warning("No forms detected on the page")
+                except Exception as e:
+                    st.sidebar.error(f"Error detecting forms: {str(e)}")
+                    import traceback
+                    st.sidebar.text(traceback.format_exc())
                 
         if st.sidebar.button("Start Automation", key="start_automation_button"):
             if not st.session_state.selected_companies:

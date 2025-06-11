@@ -26,7 +26,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-coboarding}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password_123}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -70,8 +70,8 @@ services:
       dockerfile: Dockerfile
     container_name: coboarding_app
     ports:
-      - "8501:8501"  # Streamlit
-      - "8000:8000"  # FastAPI backend
+      - "8503:8501"
+      - "8001:8000"
     environment:
       - REDIS_URL=redis://redis:6379
       - DATABASE_URL=postgresql://${POSTGRES_USER:-coboarding}:${POSTGRES_PASSWORD:-secure_password_123}@postgres:5432/${POSTGRES_DB:-coboarding}

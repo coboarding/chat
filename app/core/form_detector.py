@@ -37,67 +37,123 @@ class DetectionMethod(Enum):
 class FormDetector:
     """Advanced form field detection with multiple methods"""
     
+    # Class variables for singleton pattern
+    _instance = None
+    _initialized = False
+    _browser = None
+    _context = None
+    _page = None
+    _playwright = None
+    
+    def __new__(cls, *args, **kwargs):
+        # Singleton pattern to ensure only one instance exists
+        if cls._instance is None:
+            cls._instance = super(FormDetector, cls).__new__(cls)
+        return cls._instance
+    
     def __init__(self, ollama_url: str = "http://localhost:11434"):
-        self.ollama_client = ollama.Client(host=ollama_url)
-        self.page: Optional[Page] = None
-        self.screenshot_cache = {}
+        # Only initialize once
+        if not FormDetector._initialized:
+            self.ollama_client = ollama.Client(host=ollama_url)
+            self.screenshot_cache = {}
+            FormDetector._initialized = True
         
+    @classmethod
+    async def initialize_browser(cls):
+        """Initialize browser if not already initialized"""
+        if cls._browser is None:
+            try:
+                # Start playwright
+                cls._playwright = await async_playwright().start()
+                
+                # Launch browser with anti-detection measures
+                cls._browser = await cls._playwright.chromium.launch(
+                    headless=True,
+                    args=[
+                        '--disable-blink-features=AutomationControlled',
+                        '--disable-dev-shm-usage',
+                        '--no-sandbox',
+                        '--disable-setuid-sandbox',
+                        '--disable-web-security',
+                        '--disable-features=VizDisplayCompositor'
+                    ]
+                )
+                
+                # Create context with fingerprint randomization
+                cls._context = await cls._browser.new_context(
+                    viewport={'width': 1920, 'height': 1080},
+                    user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+                    extra_http_headers={
+                        'Accept-Language': 'en-US,en;q=0.9',
+                        'Accept-Encoding': 'gzip, deflate, br',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+                    }
+                )
+                
+                # Remove webdriver property
+                await cls._context.add_init_script("""
+                    Object.defineProperty(navigator, 'webdriver', {
+                        get: () => undefined,
+                    });
+                """)
+                
+                cls._page = await cls._context.new_page()
+                print("Browser initialized successfully")
+            except Exception as e:
+                print(f"Error initializing browser: {e}")
+                # Clean up resources if initialization fails
+                await cls.close_browser()
+    
+    @classmethod
+    async def close_browser(cls):
+        """Close browser and clean up resources"""
+        try:
+            if cls._browser:
+                await cls._browser.close()
+                cls._browser = None
+                
+            if cls._playwright:
+                await cls._playwright.stop()
+                cls._playwright = None
+                
+            cls._context = None
+            cls._page = None
+            print("Browser closed successfully")
+        except Exception as e:
+            print(f"Error closing browser: {e}")
+    
     async def detect_forms(self, url: str, method: DetectionMethod = DetectionMethod.HYBRID) -> List[FormField]:
         """Detect form fields using specified method"""
-        async with async_playwright() as p:
-            # Launch browser with anti-detection measures
-            browser = await p.chromium.launch(
-                headless=True,
-                args=[
-                    '--disable-blink-features=AutomationControlled',
-                    '--disable-dev-shm-usage',
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-web-security',
-                    '--disable-features=VizDisplayCompositor'
-                ]
-            )
+        try:
+            # Initialize browser if needed
+            await self.__class__.initialize_browser()
             
-            # Create context with fingerprint randomization
-            context = await browser.new_context(
-                viewport={'width': 1920, 'height': 1080},
-                user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-                extra_http_headers={
-                    'Accept-Language': 'en-US,en;q=0.9',
-                    'Accept-Encoding': 'gzip, deflate, br',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
-                }
-            )
+            # Navigate to URL
+            await self.__class__._page.goto(url, wait_until='networkidle')
+            await self.__class__._page.wait_for_timeout(2000)  # Allow dynamic content to load
             
-            # Remove webdriver property
-            await context.add_init_script("""
-                Object.defineProperty(navigator, 'webdriver', {
-                    get: () => undefined,
-                });
-            """)
+            # Detect fields using specified method
+            if method == DetectionMethod.DOM_ANALYSIS:
+                fields = await self._detect_dom_fields()
+            elif method == DetectionMethod.VISUAL_DETECTION:
+                fields = await self._detect_visual_fields()
+            elif method == DetectionMethod.TAB_NAVIGATION:
+                fields = await self._detect_tab_fields()
+            else:  # HYBRID
+                fields = await self._detect_hybrid_fields()
             
-            self.page = await context.new_page()
-            
-            try:
-                await self.page.goto(url, wait_until='networkidle')
-                await self.page.wait_for_timeout(2000)  # Allow dynamic content to load
-                
-                if method == DetectionMethod.DOM_ANALYSIS:
-                    fields = await self._detect_dom_fields()
-                elif method == DetectionMethod.VISUAL_DETECTION:
-                    fields = await self._detect_visual_fields()
-                elif method == DetectionMethod.TAB_NAVIGATION:
-                    fields = await self._detect_tab_fields()
-                else:  # HYBRID
-                    fields = await self._detect_hybrid_fields()
-                
-                return fields
-                
-            finally:
-                await browser.close()
+            return fields
+        except Exception as e:
+            print(f"Error detecting forms: {e}")
+            # Don't close the browser on error, just return empty list
+            return []
 
     async def _detect_dom_fields(self) -> List[FormField]:
         """Detect form fields using DOM analysis"""
+        if not self.__class__._page:
+            print("Browser page not initialized")
+            return []
+            
         fields = []
         
         # Enhanced selectors for various input types
@@ -176,26 +232,70 @@ class FormDetector:
             visual_fields = await self._parse_visual_response(response['response'])
             return visual_fields
             
+            # Convert to numpy array for OpenCV
+            nparr = np.frombuffer(screenshot, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            
+            # Use LLaVA for visual form understanding
+            base64_img = base64.b64encode(screenshot).decode('utf-8')
+            
+            prompt = """
+            Analyze this webpage screenshot and identify all form fields including:
+            1. Text input fields
+            2. Email input fields  
+            3. File upload buttons/areas
+            4. Dropdown selects
+            5. Textareas
+            6. Any interactive form elements
+            
+            For each field, provide:
+            - Type of field
+            - Approximate coordinates (x, y, width, height)
+            - Associated label text
+            - Whether it appears required
+            
+            Return as JSON array.
+            """
+            
+            try:
+                response = self.ollama_client.generate(
+                    model='llava:7b',
+                    prompt=prompt,
+                    images=[base64_img]
+                )
+                
+                # Parse LLaVA response and convert to FormField objects
+                visual_fields = await self._parse_visual_response(response['response'])
+                return visual_fields
+                
+            except Exception as e:
+                print(f"Visual detection error: {e}")
+                return []
+        
         except Exception as e:
-            print(f"Visual detection error: {e}")
+            print(f"Error in visual fields detection: {e}")
             return []
 
     async def _detect_tab_fields(self) -> List[FormField]:
         """Detect form fields using tab navigation"""
+        if not self.__class__._page:
+            print("Browser page not initialized")
+            return []
+            
         fields = []
         visited_elements = set()
         
         # Start from beginning of page
-        await self.page.keyboard.press('Home')
-        await self.page.wait_for_timeout(500)
+        await self.__class__._page.keyboard.press('Home')
+        await self.__class__._page.wait_for_timeout(500)
         
         # Tab through all focusable elements
         for i in range(100):  # Limit to prevent infinite loops
-            await self.page.keyboard.press('Tab')
-            await self.page.wait_for_timeout(100)
+            await self.__class__._page.keyboard.press('Tab')
+            await self.__class__._page.wait_for_timeout(100)
             
             # Get currently focused element
-            focused = await self.page.evaluate("""
+            focused = await self.__class__._page.evaluate("""
                 () => {
                     const element = document.activeElement;
                     if (!element) return null;
@@ -237,6 +337,11 @@ class FormDetector:
 
     async def _detect_hybrid_fields(self) -> List[FormField]:
         """Combine multiple detection methods for maximum accuracy"""
+        if not self.__class__._page:
+            print("Browser page not initialized")
+            return []
+            
+        # Run all detection methods and combine results
         dom_fields = await self._detect_dom_fields()
         visual_fields = await self._detect_visual_fields()
         tab_fields = await self._detect_tab_fields()
