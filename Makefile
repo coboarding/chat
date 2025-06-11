@@ -27,6 +27,10 @@ help:
 	@echo "  docker-up             Start all services"
 	@echo "  docker-down           Stop all services"
 	@echo "  docker-logs           View container logs"
+	@echo "\n\033[1mAnsible:\033[0m"
+	@echo "  ansible-check         Check Ansible playbook syntax"
+	@echo "  ansible-run           Run Ansible playbook"
+	@echo "  ansible-clean         Clean up Ansible generated files"
 
 # Setup virtual environment and install dependencies
 .PHONY: setup
@@ -98,6 +102,25 @@ clean:
 	find . -type d -name "__pycache__" -exec rm -r {} +
 	find . -type d -name ".pytest_cache" -exec rm -r {} +
 	rm -rf .coverage htmlcov/ .mypy_cache/ .pytest_cache/
+
+# Ansible commands
+.PHONY: ansible-check
+ansible-check:
+	@echo "\n\033[1m🔍 Checking Ansible playbook syntax...\033[0m"
+	cd $(CURDIR)/ansible && ansible-playbook --syntax-check -i inventory/hosts site.yml
+	@echo "\n\033[1m✅ Ansible playbook syntax is valid!\033[0m"
+
+.PHONY: ansible-run
+ansible-run:
+	@echo "\n\033[1m🚀 Running Ansible playbook...\033[0m"
+	cd $(CURDIR)/ansible && ansible-playbook -i inventory/hosts site.yml
+	@echo "\n\033[1m✅ Ansible playbook execution complete!\033[0m"
+
+.PHONY: ansible-clean
+ansible-clean:
+	@echo "\n\033[1m🧹 Cleaning up Ansible generated files...\033[0m"
+	rm -rf ~/ansible_demo
+	@echo "\n\033[1m✅ Ansible generated files removed!\033[0m"
 
 # Help target for backward compatibility
 .PHONY: all
