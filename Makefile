@@ -52,98 +52,6 @@ setup:
 install:
 	$(PIP) install -e .[dev]
 
-# Run tests
-.PHONY: test
-test:
-	@echo "\n\033[1mRunning tests...\033[0m"
-	$(PYTHON) -m pytest $(TEST_PATH) -v
-
-# Run tests with coverage
-.PHONY: test-cov
-test-cov:
-	@echo "\n\033[1mRunning tests with coverage...\033[0m"
-	$(PYTHON) -m pytest $(TEST_PATH) -v --cov=app --cov-report=$(COV_REPORT)
-
-# Run unit tests
-.PHONY: test-unit
-test-unit:
-	@echo "\n\033[1mRunning unit tests...\033[0m"
-	$(PYTHON) -m pytest $(TEST_PATH)/unit -v --cov=app --cov-report=$(COV_REPORT)
-
-# Run integration tests
-.PHONY: test-integration
-test-integration:
-	@echo "\n\033[1mRunning integration tests...\033[0m"
-	$(PYTHON) -m pytest $(TEST_PATH)/integration -v --cov=app --cov-append
-
-# Lint code
-.PHONY: lint
-lint:
-	@echo "\n\033[1mRunning flake8...\033[0m"
-	$(PYTHON) -m flake8 app tests
-	@echo "\n\033[1mRunning black...\033[0m"
-	$(PYTHON) -m black --check app tests
-	@echo "\n\033[1mRunning isort...\033[0m"
-	$(PYTHON) -m isort --check-only app tests
-
-# Format code
-.PHONY: format
-format:
-	@echo "\n\033[1mFormatting code with black...\033[0m"
-	$(PYTHON) -m black app tests
-	@echo "\n\033[1mSorting imports with isort...\033[0m"
-	$(PYTHON) -m isort app tests
-
-# Type checking
-.PHONY: typecheck
-typecheck:
-	@echo "\n\033[1mRunning mypy...\033[0m"
-	$(PYTHON) -m mypy app
-
-# Run all checks
-.PHONY: check-all
-check-all: lint typecheck test
-
-# Clean up
-.PHONY: clean
-clean:
-	@echo "\n\033[1mCleaning up...\033[0m"
-	find . -type d -name "__pycache__" -exec rm -r {} +
-	find . -type d -name ".pytest_cache" -exec rm -r {} +
-	find . -type d -name ".mypy_cache" -exec rm -r {} +
-	rm -rf .coverage htmlcov/ .pytest_cache/ .mypy_cache/
-	find . -name "*.pyc" -delete
-	find . -name "*.pyo" -delete
-	find . -name "*.pyd" -delete
-	find . -name "*.py,cover" -delete
-
-# Database commands
-.PHONY: db-init
-db-init:
-	@echo "\n\033[1mInitializing database...\033[0m"
-	$(PYTHON) -m alembic upgrade head
-
-.PHONY: db-migrate
-db-migrate:
-	@read -p "Enter migration message: " message; \
-	$(PYTHON) -m alembic revision --autogenerate -m "$$message"
-
-.PHONY: db-upgrade
-db-upgrade:
-	@echo "\n\033[1mUpgrading database...\033[0m"
-	$(PYTHON) -m alembic upgrade head
-
-.PHONY: db-downgrade
-db-downgrade:
-	@read -p "Enter revision to downgrade to (or 'base' to remove all): " rev; \
-	$(PYTHON) -m alembic downgrade $$rev
-
-# Run the application
-.PHONY: run
-run:
-	@echo "\n\033[1mStarting application on port $(PORT)...\033[0m"
-	$(PYTHON) -m streamlit run app/main.py --server.port $(PORT)
-
 # Run the application
 .PHONY: run
 run:
@@ -160,12 +68,29 @@ dev:
 .PHONY: test
 test:
 	@echo "\n\033[1m🧪 Running tests...\033[0m"
-	PYTHONPATH=$(PWD) $(PYTHON) -m pytest tests/ -v
+	PYTHONPATH=$(PWD) $(PYTHON) -m pytest $(TEST_PATH) -v
 
+# Run tests with coverage
 .PHONY: test-cov
 test-cov:
 	@echo "\n\033[1m📊 Running tests with coverage...\033[0m"
-	PYTHONPATH=$(PWD) $(PYTHON) -m pytest --cov=app --cov-report=term-missing --cov-report=html tests/
+	PYTHONPATH=$(PWD) $(PYTHON) -m pytest --cov=app --cov-report=term-missing --cov-report=html $(TEST_PATH)
+
+# Run unit tests
+.PHONY: test-unit
+test-unit:
+	@echo "\n\033[1m🧪 Running unit tests...\033[0m"
+	PYTHONPATH=$(PWD) $(PYTHON) -m pytest $(TEST_PATH)/unit -v --cov=app --cov-report=$(COV_REPORT)
+
+# Run integration tests
+.PHONY: test-integration
+test-integration:
+	@echo "\n\033[1m🧪 Running integration tests...\033[0m"
+	PYTHONPATH=$(PWD) $(PYTHON) -m pytest $(TEST_PATH)/integration -v --cov=app --cov-append
+
+# Run all checks
+.PHONY: check-all
+check-all: lint typecheck test
 
 # Linting and formatting
 .PHONY: lint
