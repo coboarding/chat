@@ -159,70 +159,6 @@ class CVProcessor:
         except Exception as e:
             print(f"OCR extraction error: {e}")
             return ""
-
-    async def _process_with_mistral(self, text: str) -> Dict[str, Any]:
-        """Process CV text with Mistral 7B for structured extraction"""
-        prompt = f"""
-        Extract structured information from this CV/resume text. Return ONLY a JSON object with these exact fields:
-
-        {{
-            "name": "Full name",
-            "email": "Email address", 
-            "phone": "Phone number",
-            "location": "City, Country",
-            "title": "Current/desired job title",
-            "summary": "Professional summary (2-3 sentences)",
-            "experience_years": "Total years of experience (number only)",
-            "skills": ["skill1", "skill2", "skill3"],
-            "programming_languages": ["language1", "language2"],
-            "frameworks": ["framework1", "framework2"],
-            "education": [
-                {{
-        try:
-            # Prepare the prompt for Mistral
-            prompt = f"""Extract the following information from this CV in JSON format:
-            - name
-            - email
-            - phone
-            - title/position
-            - skills (list)
-            - experience (list of objects with position, company, start_date, end_date, description)
-            - education (list of objects with degree, institution, year)
-            - certifications (list)
-            - languages (list)
-            - linkedin (url)
-            - github (url)
-            - website (url)
-            
-            CV Content:
-            {text}
-            
-            Return ONLY the JSON object, no other text."""
-            
-            # Call Ollama API
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: self.ollama_client.chat(
-                    model='mistral',
-                    messages=[{'role': 'user', 'content': prompt}]
-                )
-            )
-            
-            # Extract and parse the response
-            if response and 'message' in response and 'content' in response['message']:
-                content = response['message']['content']
-                # Clean up the response to ensure it's valid JSON
-                json_str = self._clean_json_response(content)
-                try:
-                    return json.loads(json_str)
-                except json.JSONDecodeError:
-                    print(f"Failed to parse JSON response: {json_str}")
-                    return {}
-            return {}
-            
-        except Exception as e:
-            print(f"Mistral processing error: {e}")
             return {}
 
     async def _process_with_visual_llm(self, file_path: Path, file_type: str) -> Dict[str, Any]:
@@ -541,16 +477,90 @@ class CVProcessor:
         return ''
 
     def _clean_json_response(self, json_text: str) -> str:
-        """Clean and fix common JSON formatting issues"""
-        # Remove markdown code blocks
-        json_text = re.sub(r'```json\s*', '', json_text)
-        json_text = re.sub(r'```\s*', '', json_text)
+        """Clean and fix common JSON formatting issues.
         
-        # Remove leading/trailing whitespace
-        json_text = json_text.strip()
-        
-        # Fix common JSON issues
-        json_text = re.sub(r',\s*}', '}', json_text)  # Remove trailing commas
-        json_text = re.sub(r',\s*]', ']', json_text)   # Remove trailing commas in arrays
-        
-        return json_text
+        Args:
+            json_text: The raw JSON string to clean
+            
+        Returns:
+            str: Cleaned JSON string
+        """
+        if not json_text or not isinstance(json_text, str):
+            return "{}"
+            
+        try:
+            # Remove markdown code blocks if present
+            json_text = re.sub(r'```(?:json)?\s*([\s\S]*?)\s*```', r'\1', json_text)
+            
+            # Remove any non-printable characters except newlines and spaces
+            json_text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]', '', json_text)
+            
+            # Remove leading/trailing whitespace and newlines
+            json_text = json_text.strip()
+            
+            # Fix common JSON issues
+            json_text = re.sub(r',\s*([}\]])', r'\1', json_text)  # Remove trailing commas
+            json_text = re.sub(r'([{\[,])\s*([}\],])', r'\1\2', json_text)  # Remove empty elements
+            
+            # Ensure the string is valid JSON
+            json.loads(json_text)
+            return json_text
+            
+        except json.JSONDecodeError as e:
+            print(f"Warning: Failed to clean JSON response: {e}")
+            try:
+                # Try to extract JSON from malformed response
+                match = re.search(r'({[\s\S]*})', json_text)
+                if match:
+                    return match.group(1)
+            except Exception:
+                pass
+                
+            return "{}"    async def _process_with_mistral(self, text: str) -> Dict[str, Any]:
+        """Process CV text with Mistral 7B for structured extraction"""
+        try:
+            # Prepare the prompt for Mistral
+            prompt = f"""Extract the following information from this CV in JSON format:
+            - name
+            - email
+            - phone
+            - title/position
+            - skills (list)
+            - experience (list of objects with position, company, start_date, end_date, description)
+            - education (list of objects with degree, institution, year)
+            - certifications (list)
+            - languages (list)
+            - linkedin (url)
+            - github (url)
+            - website (url)
+            
+            CV Content:
+            {text}
+            
+            Return ONLY the JSON object, no other text."""
+            
+            # Call Ollama API
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                lambda: self.ollama_client.chat(
+                    model='mistral',
+                    messages=[{'role': 'user', 'content': prompt}]
+                )
+            )
+            
+            # Extract and parse the response
+            if response and 'message' in response and 'content' in response['message']:
+                content = response['message']['content']
+                # Clean up the response to ensure it's valid JSON
+                json_str = self._clean_json_response(content)
+                try:
+                    return json.loads(json_str)
+                except json.JSONDecodeError:
+                    print(f"Failed to parse JSON response: {json_str}")
+                    return {}
+            return {}
+            
+        except Exception as e:
+            print(f"Mistral processing error: {e}")
+            return {}
