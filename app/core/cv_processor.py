@@ -3,27 +3,33 @@ import asyncio
 import json
 import re
 import tempfile
+import base64
+import io
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any, Optional, Union
+
 import spacy
 import ollama
 import PyPDF2
 import docx
 from PIL import Image
 import pytesseract
-import base64
-import io
 
 class CVProcessor:
-    """Advanced CV processing with multiple local LLM models"""
+    """Advanced CV processing with multiple local LLM models."""
     
     def __init__(self, ollama_url: str = "http://localhost:11434"):
+        """Initialize the CV processor with Ollama client.
+        
+        Args:
+            ollama_url: URL of the Ollama server (default: http://localhost:11434)
+        """
         self.ollama_client = ollama.Client(host=ollama_url)
         self.nlp = None
         self._load_spacy_model()
         
     def _load_spacy_model(self):
-        """Load spaCy model for NER"""
+        """Load spaCy model for Named Entity Recognition."""
         try:
             self.nlp = spacy.load("en_core_web_sm")
         except OSError:
@@ -31,7 +37,17 @@ class CVProcessor:
             self.nlp = None
 
     async def process_cv(self, uploaded_file) -> Dict[str, Any]:
-        """Process uploaded CV file with multiple extraction methods"""
+        """Process uploaded CV file with multiple extraction methods.
+        
+        Args:
+            uploaded_file: File-like object with read(), name, and type attributes
+            
+        Returns:
+            Dict containing extracted CV information
+            
+        Raises:
+            ValueError: If the CV text cannot be extracted
+        """
         # Save uploaded file temporarily
         temp_path = await self._save_temp_file(uploaded_file)
         
@@ -516,7 +532,8 @@ class CVProcessor:
             except Exception:
                 pass
                 
-            return "{}"    async def _process_with_mistral(self, text: str) -> Dict[str, Any]:
+
+    async def _process_with_mistral(self, text: str) -> Dict[str, Any]:
         """Process CV text with Mistral 7B for structured extraction"""
         try:
             # Prepare the prompt for Mistral
