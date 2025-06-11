@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker
 )
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import QueuePool
+from sqlalchemy.pool import NullPool
 from sqlalchemy import text
 import asyncpg
 from loguru import logger
@@ -52,22 +52,18 @@ def get_database_url() -> str:
 def create_engine() -> AsyncEngine:
     """Create SQLAlchemy async engine with optimal configuration"""
     database_url = get_database_url()
-
-    return create_async_engine(
-        database_url,
-        # Connection pool settings
-        poolclass=QueuePool,
-        pool_size=10,  # Number of connections to maintain
-        max_overflow=20,  # Additional connections allowed
-        pool_pre_ping=True,  # Validate connections before use
-        pool_recycle=3600,  # Recycle connections after 1 hour
-
-        # Query settings
-        echo=os.getenv('ENVIRONMENT') == 'development',  # Log SQL queries in dev
-        future=True,  # Use SQLAlchemy 2.0 style
-
-        # Connection arguments
-        connect_args={
+    
+    # Connection pool configuration
+    pool_class = None  # Default to NullPool for SQLite
+    connect_args: dict = {}
+    
+    if 'sqlite' in database_url:
+        # SQLite specific configuration
+        connect_args = {"check_same_thread": False}  # Required for SQLite in async mode
+    else:
+        # PostgreSQL specific configuration
+        pool_class = NullPool  # Use NullPool for PostgreSQL with asyncpg
+        connect_args = {
             "server_settings": {
                 "jit": "off",  # Disable JIT for faster query planning
                 "application_name": "coboarding_api",
@@ -75,7 +71,19 @@ def create_engine() -> AsyncEngine:
             "command_timeout": 30,  # 30 second query timeout
             "statement_cache_size": 0,  # Disable prepared statement cache
         }
-    )
+    
+    # Common engine arguments
+    engine_args = {
+        'echo': os.getenv('ENVIRONMENT') == 'development',  # Log SQL queries in dev
+        'future': True,  # Use SQLAlchemy 2.0 style
+        'connect_args': connect_args,
+    }
+    
+    # Add pool configuration if needed
+    if pool_class:
+        engine_args['poolclass'] = pool_class
+    
+    return create_async_engine(database_url, **engine_args)
 
 
 async def init_database() -> None:
@@ -201,91 +209,6 @@ async def close_database() -> None:
 
     if engine:
         logger.info("Closing database connections...")
-
-
-# app/database/connection.py
-"""
-Database connection and session management for coBoarding platform
-Handles PostgreSQL connections with async support and connection pooling
-"""
-
-import os
-import asyncio
-from typing import AsyncGenerator, Optional
-from contextlib import asynccontextmanager
-
-from sqlalchemy.ext.asyncio import (
-    create_async_engine,
-    AsyncSession,
-    AsyncEngine,
-    async_sessionmaker
-)
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import QueuePool
-from sqlalchemy import text
-import asyncpg
-from loguru import logger
-
-from .models import Base
-
-# Global engine instance
-engine: Optional[AsyncEngine] = None
-async_session_factory: Optional[async_sessionmaker] = None
-
-
-def get_database_url() -> str:
-    """Get database URL from environment variables"""
-    database_url = os.getenv('DATABASE_URL')
-
-    if not database_url:
-        # Fallback to individual components
-        user = os.getenv('POSTGRES_USER', 'coboarding')
-        password = os.getenv('POSTGRES_PASSWORD', 'secure_password_123')
-        host = os.getenv('POSTGRES_HOST', 'localhost')
-        port = os.getenv('POSTGRES_PORT', '5432')
-        database = os.getenv('POSTGRES_DB', 'coboarding')
-
-        database_url = f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{database}"
-
-    # Ensure we're using asyncpg driver
-    if database_url.startswith('postgresql://'):
-        database_url = database_url.replace('postgresql://', 'postgresql+asyncpg://', 1)
-
-    return database_url
-
-
-def create_engine() -> AsyncEngine:
-    """Create SQLAlchemy async engine with optimal configuration"""
-    database_url = get_database_url()
-
-    return create_async_engine(
-        database_url,
-        # Connection pool settings
-        poolclass=QueuePool,
-        pool_size=10,  # Number of connections to maintain
-        max_overflow=20,  # Additional connections allowed
-        pool_pre_ping=True,  # Validate connections before use
-        pool_recycle=3600,  # Recycle connections after 1 hour
-
-        # Query settings
-        echo=os.getenv('ENVIRONMENT') == 'development',  # Log SQL queries in dev
-        future=True,  # Use SQLAlchemy 2.0 style
-
-        # Connection arguments
-        connect_args={
-            "server_settings": {
-                "jit": "off",  # Disable JIT for faster query planning
-                "application_name": "coboarding_api",
-            },
-            "command_timeout": 30,  # 30 second query timeout
-            "statement_cache_size": 0,  # Disable prepared statement cache
-        }
-    )
-
-
-async def init_database() -> None:
-    """Initialize database connection and create tables"""
-    global engine, async_session_factory
 
     try:
         logger.info("Initializing database connection...")
