@@ -600,6 +600,36 @@ async def get_or_create_candidate_by_email(session: AsyncSession, email: str, **
     return candidate, True
 
 
+async def update_candidate_data(session: AsyncSession, candidate_id: str, update_data: dict) -> bool:
+    """
+    Update candidate data by ID
+    
+    Args:
+        session: Database session
+        candidate_id: ID of the candidate to update
+        update_data: Dictionary of fields to update
+        
+    Returns:
+        bool: True if update was successful, False if candidate not found
+    """
+    from .models import Candidate
+    from sqlalchemy.future import select
+    
+    result = await session.execute(
+        select(Candidate).where(Candidate.id == candidate_id)
+    )
+    candidate = result.scalars().first()
+    
+    if not candidate:
+        return False
+        
+    for key, value in update_data.items():
+        if hasattr(candidate, key):
+            setattr(candidate, key, value)
+            
+    return True
+
+
 async def create_candidate(session: AsyncSession, candidate_data: dict) -> str:
     """Create a new candidate record"""
     from .models import Candidate
