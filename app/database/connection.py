@@ -630,6 +630,52 @@ async def update_candidate_data(session: AsyncSession, candidate_id: str, update
     return True
 
 
+async def log_audit_event(
+    session: AsyncSession,
+    event_type: str,
+    user_id: str = None,
+    target_id: str = None,
+    target_type: str = None,
+    details: dict = None,
+    ip_address: str = None,
+    user_agent: str = None
+) -> str:
+    """
+    Log an audit event to the database
+    
+    Args:
+        session: Database session
+        event_type: Type of event (e.g., 'user_login', 'data_access', 'data_modification')
+        user_id: ID of the user who performed the action (if any)
+        target_id: ID of the target entity (if any)
+        target_type: Type of the target entity (e.g., 'user', 'candidate', 'application')
+        details: Additional details about the event
+        ip_address: IP address of the client
+        user_agent: User agent string of the client
+        
+    Returns:
+        str: ID of the created audit log entry
+    """
+    from .models import AuditLog
+    from datetime import datetime
+    
+    audit_entry = AuditLog(
+        event_type=event_type,
+        user_id=user_id,
+        target_id=target_id,
+        target_type=target_type,
+        details=details or {},
+        ip_address=ip_address,
+        user_agent=user_agent,
+        created_at=datetime.utcnow()
+    )
+    
+    session.add(audit_entry)
+    await session.flush()
+    
+    return str(audit_entry.id)
+
+
 async def record_notification(
     session: AsyncSession,
     recipient_id: str,
