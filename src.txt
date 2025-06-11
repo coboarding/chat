@@ -1,0 +1,65 @@
+coboarding/
+├── docker-compose.yml
+├── .env
+├── .gitignore
+├── README.md
+├── deploy.sh
+├── stop.sh
+├── logs.sh
+├── app/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── main.py
+│   ├── api.py
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── cv_processor.py
+│   │   ├── form_detector.py
+│   │   ├── automation_engine.py
+│   │   ├── chat_interface.py
+│   │   └── notification_service.py
+│   ├── database/
+│   │   ├── __init__.py
+│   │   ├── models.py
+│   │   ├── connection.py
+│   │   └── migrations/
+│   └── utils/
+│       ├── __init__.py
+│       └── gdpr_compliance.py
+├── worker/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── worker.py
+│   ├── core/
+│   │   ├── __init__.py
+│   │   └── automation_worker.py
+│   └── utils/
+│       ├── __init__.py
+│       └── helpers.py
+├── cleanup/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── daily_cleanup.py
+│   └── scripts/
+│       ├── __init__.py
+│       └── maintenance.py
+├── scripts/
+│   ├── init.sql
+│   ├── backup.sh
+│   └── restore.sh
+├── data/
+│   ├── job_listings.json
+│   └── sample_cv.pdf
+├── templates/
+│   ├── email_templates/
+│   │   ├── candidate_notification.html
+│   │   └── employer_notification.html
+│   └── chat_templates/
+│       └── welcome_message.txt
+├── uploads/
+├── downloads/
+├── logs/
+└── docs/
+    ├── API.md
+    ├── DEPLOYMENT.md
+    └── ARCHITECTURE.md

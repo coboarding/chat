@@ -192,3 +192,374 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+
+
+# .gitignore for coBoarding platform
+
+# === Python ===
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# === Docker ===
+# Docker volumes and data
+docker-compose.override.yml
+.dockerignore
+
+# === Databases ===
+# PostgreSQL
+*.dump
+*.sql.backup
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# === Redis ===
+# Redis dump files
+dump.rdb
+appendonly.aof
+
+# === File uploads and processing ===
+# User uploaded files
+uploads/
+downloads/
+temp/
+tmp/
+*.pdf
+*.docx
+*.doc
+*.txt
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# CV files and sensitive data
+cv_files/
+resumes/
+documents/
+
+# === Logs ===
+# Application logs
+logs/
+*.log
+log_*.txt
+
+# === AI Models ===
+# Local AI model files
+models/
+*.bin
+*.onnx
+*.h5
+*.pkl
+*.joblib
+
+# Ollama data
+.ollama/
+ollama_data/
+
+# === Browser automation ===
+# Playwright browsers
+playwright/
+.playwright/
+
+# Selenium
+chromedriver
+geckodriver
+*.exe
+
+# Screenshots from automation
+screenshots/
+automation_screenshots/
+
+# === Configuration and secrets ===
+# Environment files
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+
+# API keys and secrets
+secrets/
+.secrets
+api_keys.txt
+credentials.json
+service_account.json
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.p12
+
+# === IDE and editors ===
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# === OS generated files ===
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# === Monitoring and metrics ===
+# Prometheus data
+prometheus_data/
+
+# Grafana data
+grafana_data/
+
+# === Backup files ===
+# Database backups
+backup_*.sql
+*.backup
+*.bak
+
+# Configuration backups
+config_backup/
+*.conf.bak
+
+# === Development and testing ===
+# Test files
+test_data/
+test_uploads/
+test_results/
+
+# Jupyter notebooks with outputs
+*.ipynb
+
+# === Node.js (if using for frontend) ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+
+# === Temporary files ===
+# Temporary directories
+temp/
+tmp/
+cache/
+.cache/
+
+# === Build artifacts ===
+# Build outputs
+build/
+dist/
+out/
+
+# === Package managers ===
+# Poetry
+poetry.lock
+
+# === Cloud and deployment ===
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# AWS
+.aws/
+
+# === n8n workflow data ===
+n8n_data/
+workflows/
+
+# === GDPR and compliance ===
+# Audit logs (sensitive)
+audit_logs/
+compliance_reports/
+
+# === Monitoring ===
+# Health check files
+health/
+status/
+
+# === Custom coBoarding specific ===
+# Company data files (might contain sensitive info)
+data/companies.json
+data/real_job_listings.json
+
+# User sessions (Redis backup)
+sessions/
+
+# Processed CV data
+processed_cvs/
+
+# Form automation results
+automation_results/
+
+# Notification templates with real company data
+templates/real_*
+
+# === End of .gitignore ===
