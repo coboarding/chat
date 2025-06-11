@@ -601,16 +601,14 @@ class CandidateSession(Base, UUIDMixin, TimestampMixin):
             'gdpr_consent': self.gdpr_consent,
             'gdpr_consent_version': self.gdpr_consent_version,
             'gdpr_consent_date': self.gdpr_consent_date.isoformat() if self.gdpr_consent_date else None,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
-
 
 # Add relationship to Candidate model
 Candidate.sessions = relationship(
     "CandidateSession", 
     back_populates="candidate",
-    cascade="all, delete-orphan"
+    cascade="all, delete-orphan",
+    lazy="dynamic"
 )
 
 # Indexes for performance optimization
