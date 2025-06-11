@@ -1237,6 +1237,72 @@ async def get_candidate_by_email(session: AsyncSession, email: str):
         raise
 
 
+async def delete_candidate_data(session: AsyncSession, candidate_id: str, anonymize: bool = True):
+    """
+    Delete or anonymize a candidate's personal data for GDPR compliance
+    
+    Args:
+        session: Database session
+        candidate_id: ID of the candidate
+        anonymize: If True, anonymize the data instead of deleting it
+        
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    from datetime import datetime
+    from sqlalchemy import update, and_
+    from .models import Candidate, Application, AuditLog
+    
+    try:
+        # Create audit log entry before deletion
+        await log_audit_event(
+            session=session,
+            event_type='data_deletion',
+            target_id=candidate_id,
+            target_type='candidate',
+            details={'anonymize': anonymize},
+            ip_address='system',
+            user_agent='coboarding/1.0'
+        )
+        
+        if anonymize:
+            # Anonymize personal data
+            stmt = (
+                update(Candidate)
+                .where(Candidate.id == candidate_id)
+                .values(
+                    email=f'anonymized-{candidate_id}@deleted.local',
+                    first_name='Anonymous',
+                    last_name='User',
+                    phone_number=None,
+                    address=None,
+                    date_of_birth=None,
+                    profile_picture=None,
+                    resume_path=None,
+                    is_active=False,
+                    deleted_at=datetime.utcnow(),
+                    updated_at=datetime.utcnow()
+                )
+            )
+        else:
+            # Hard delete the candidate and related data
+            # Note: This will cascade to related records if foreign key constraints are set up that way
+            stmt = select(Candidate).where(Candidate.id == candidate_id)
+            result = await session.execute(stmt)
+            candidate = result.scalars().first()
+            
+            if candidate:
+                await session.delete(candidate)
+        
+        await session.commit()
+        return True
+        
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error deleting candidate data for {candidate_id}: {str(e)}")
+        raise
+
+
 # Database health monitoring
 async def get_connection_pool_status() -> dict:
     """Get connection pool status for monitoring"""
