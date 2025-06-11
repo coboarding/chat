@@ -10,6 +10,18 @@ from .form_detector import AutomationEngine
 from .chat_interface import ChatInterface
 from .notification_service import NotificationService
 
+# Import database models from the database package
+from app.database.models import (
+    Base,
+    Candidate,
+    JobListing,
+    Application,
+    Notification as DBNotification,  # Rename to avoid conflict
+    AuditLog,
+    TimestampMixin,
+    UUIDMixin
+)
+
 __all__ = [
     'CVProcessor',
     'FormDetector',
@@ -17,29 +29,18 @@ __all__ = [
     'DetectionMethod',
     'AutomationEngine',
     'ChatInterface',
-    'NotificationService'
+    'NotificationService',
+    'Base',
+    'Candidate',
+    'JobListing',
+    'Application',
+    'DBNotification',
+    'AuditLog',
+    'TimestampMixin',
+    'UUIDMixin'
 ]
 
 __version__ = '1.0.0'
-
-# ===================================================================
-
-# app/database/__init__.py
-"""
-Database layer for coBoarding platform
-Provides models, connections, and utilities for data persistence
-"""
-
-from .models import (
-    Base,
-    Candidate,
-    JobListing,
-    Application,
-    Notification,
-    AuditLog,
-    TimestampMixin,
-    UUIDMixin
-)
 from .connection import (
     init_database,
     close_database,
@@ -79,63 +80,4 @@ __all__ = [
     'get_pending_notifications'
 ]
 
-__version__ = '1.0.0'
-
-# ===================================================================
-
-# app/utils/__init__.py
-"""
-Utility modules for coBoarding platform
-Provides GDPR compliance, validation, and helper functions
-"""
-
-from .gdpr_compliance import GDPRManager
-
-__all__ = [
-    'GDPRManager'
-]
-
-__version__ = '1.0.0'
-
-# ===================================================================
-
-# worker/core/__init__.py
-"""
-Worker core components for background task processing
-"""
-
-from .automation_worker import AutomationWorker
-
-__all__ = [
-    'AutomationWorker'
-]
-
-__version__ = '1.0.0'
-
-# ===================================================================
-
-# worker/utils/__init__.py
-"""
-Worker utility modules
-Provides configuration, task queue, and monitoring
-"""
-
-from .helpers import WorkerConfig, TaskQueue, HealthMonitor
-
-__all__ = [
-    'WorkerConfig',
-    'TaskQueue',
-    'HealthMonitor'
-]
-
-__version__ = '1.0.0'
-
-# ===================================================================
-
-# cleanup/scripts/__init__.py
-"""
-Cleanup scripts for GDPR compliance and maintenance
-"""
-
-__all__ = []
 __version__ = '1.0.0'

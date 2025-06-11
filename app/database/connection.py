@@ -563,6 +563,43 @@ async def run_cleanup() -> dict:
 
 
 # Utility functions for common database operations
+async def get_or_create_candidate_by_email(session: AsyncSession, email: str, **candidate_data) -> tuple:
+    """
+    Get an existing candidate by email or create a new one if not found.
+    
+    Args:
+        session: Database session
+        email: Candidate's email address
+        **candidate_data: Additional candidate data for creation
+        
+    Returns:
+        tuple: (candidate, created) where created is a boolean indicating if the candidate was created
+    """
+    from sqlalchemy.future import select
+    from sqlalchemy import or_
+    from .models import Candidate
+    
+    # Try to find an existing candidate by email
+    result = await session.execute(
+        select(Candidate).where(
+            or_(
+                Candidate.email == email,
+                Candidate.alternative_emails.contains([email])
+            )
+        )
+    )
+    candidate = result.scalars().first()
+    
+    if candidate:
+        return candidate, False
+        
+    # Create a new candidate if not found
+    candidate_data['email'] = email
+    candidate = Candidate(**candidate_data)
+    session.add(candidate)
+    return candidate, True
+
+
 async def create_candidate(session: AsyncSession, candidate_data: dict) -> str:
     """Create a new candidate record"""
     from .models import Candidate
