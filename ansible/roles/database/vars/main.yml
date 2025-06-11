@@ -3,3 +3,4 @@
 db_name: test_database
 db_user: admin
 db_password: password123
+website_title: Ansible Demo Website
