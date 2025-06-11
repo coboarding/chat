@@ -565,7 +565,7 @@ class CandidateSession(Base, UUIDMixin, TimestampMixin):
     is_active = Column(Boolean, default=True, index=True)
     logout_reason = Column(String(100))
     
-    # GDPR and security
+    # GDPR compliance
     gdpr_consent = Column(Boolean, default=False)
     gdpr_consent_version = Column(String(50))
     gdpr_consent_date = Column(DateTime)
@@ -573,11 +573,11 @@ class CandidateSession(Base, UUIDMixin, TimestampMixin):
     # Relationships
     candidate = relationship("Candidate", back_populates="sessions")
     
-    # Indexes
     __table_args__ = (
         Index('idx_candidate_sessions_token', 'session_token', unique=True),
         Index('idx_candidate_sessions_active', 'is_active', 'expires_at'),
         Index('idx_candidate_sessions_candidate', 'candidate_id', 'is_active'),
+        Index('idx_candidate_sessions_compound', 'is_active', 'expires_at')
     )
     
     def is_expired(self) -> bool:
@@ -589,15 +589,13 @@ class CandidateSession(Base, UUIDMixin, TimestampMixin):
         return {
             'id': str(self.id),
             'candidate_id': str(self.candidate_id),
-            'ip_address': self.ip_address,
-            'user_agent': self.user_agent,
-            'device_info': self.device_info or {},
             'login_at': self.login_at.isoformat() if self.login_at else None,
             'last_activity_at': self.last_activity_at.isoformat() if self.last_activity_at else None,
             'expires_at': self.expires_at.isoformat() if self.expires_at else None,
             'logout_at': self.logout_at.isoformat() if self.logout_at else None,
             'is_active': self.is_active,
-            'logout_reason': self.logout_reason,
+            'ip_address': self.ip_address,
+            'device_info': self.device_info or {},
             'gdpr_consent': self.gdpr_consent,
             'gdpr_consent_version': self.gdpr_consent_version,
             'gdpr_consent_date': self.gdpr_consent_date.isoformat() if self.gdpr_consent_date else None,
