@@ -772,6 +772,57 @@ async def get_application(session: AsyncSession, application_id: str):
     return result.scalars().first()
 
 
+async def get_applications_for_job_listing(
+    session: AsyncSession,
+    job_listing_id: str,
+    limit: int = 100,
+    offset: int = 0,
+    status: str = None,
+    sort_by: str = 'created_at',
+    sort_order: str = 'desc'
+) -> list:
+    """
+    Get all applications for a specific job listing
+    
+    Args:
+        session: Database session
+        job_listing_id: ID of the job listing
+        limit: Maximum number of applications to return
+        offset: Number of applications to skip
+        status: Optional status to filter applications by
+        sort_by: Field to sort by (default: 'created_at')
+        sort_order: Sort order ('asc' or 'desc')
+        
+    Returns:
+        list: List of Application objects with joined candidate information
+    """
+    from .models import Application, Candidate
+    from sqlalchemy.future import select
+    from sqlalchemy import and_, desc, asc
+    
+    # Start building the query with a join to get candidate details
+    query = select(Application).join(
+        Candidate, Application.candidate_id == Candidate.id
+    ).where(Application.job_listing_id == job_listing_id)
+    
+    # Apply status filter if provided
+    if status:
+        query = query.where(Application.status == status)
+    
+    # Apply sorting
+    sort_field = getattr(Application, sort_by, Application.created_at)
+    if sort_order.lower() == 'asc':
+        query = query.order_by(asc(sort_field))
+    else:
+        query = query.order_by(desc(sort_field))
+    
+    # Apply pagination
+    query = query.limit(limit).offset(offset)
+    
+    result = await session.execute(query)
+    return result.scalars().all()
+
+
 async def get_applications_for_candidate(
     session: AsyncSession, 
     candidate_id: str,
