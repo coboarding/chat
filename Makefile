@@ -3,7 +3,7 @@
 # Variables
 VENV = venv
 # Enforce Python 3.12 usage
-PYTHON = $(shell command -v python3.12 2>/dev/null || echo $(VENV)/bin/python3.12)
+PYTHON = $(shell command -v /home/tom/.pyenv/shims/python3.12 2>/dev/null || command -v python3.12 2>/dev/null || echo $(VENV)/bin/python3.12)
 PIP = $(VENV)/bin/pip
 PYTHON_VERSION = 3.12
 PORT ?= 8501
