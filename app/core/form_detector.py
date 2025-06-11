@@ -47,7 +47,7 @@ class FormDetector:
         async with async_playwright() as p:
             # Launch browser with anti-detection measures
             browser = await p.chromium.launch(
-                headless=False,
+                headless=True,
                 args=[
                     '--disable-blink-features=AutomationControlled',
                     '--disable-dev-shm-usage',
