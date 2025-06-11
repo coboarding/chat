@@ -234,87 +234,94 @@ async def close_database() -> None:
         # Create tables if they don't exist
         await create_tables()
 
-    except Exception as e:
-        logger.error(f"❌ Database initialization failed: {e}")
-        raise
-
-
-async def create_tables() -> None:
-    """Create all database tables"""
-    global engine
-
-    if not engine:
-        raise RuntimeError("Database engine not initialized")
-
-    try:
-        logger.info("Creating database tables...")
-
-        async with engine.begin() as conn:
             # Create tables
             await conn.run_sync(Base.metadata.create_all)
 
-            # Create indexes and constraints
-            await conn.execute(text("""
-                -- Create additional indexes for performance
-                CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_candidates_session_expires 
-                ON candidates(session_id, expires_at);
+            # Get database dialect
+            dialect = engine.dialect.name
+            logger.info(f"Using database dialect: {dialect}")
 
-                CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_applications_status_score 
-                ON applications(status, match_score DESC);
+            if dialect == 'postgresql':
+                # PostgreSQL specific indexes and functions
+                await conn.execute(text("""
+                    -- Create additional indexes for performance
+                    CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_candidates_session_expires 
+                    ON candidates(session_id, expires_at);
 
-                CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_retry 
-                ON notifications(delivery_status, next_retry_at) 
-                WHERE delivery_status = 'failed';
+                    CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_applications_status_score 
+                    ON applications(status, match_score DESC);
 
-                -- Create function for automatic cleanup
-                CREATE OR REPLACE FUNCTION cleanup_expired_data()
-                RETURNS INTEGER AS $
-                DECLARE
-                    deleted_count INTEGER := 0;
-                BEGIN
-                    -- Delete expired candidates (cascades to applications and notifications)
-                    DELETE FROM candidates WHERE expires_at < NOW();
-                    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+                    CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_retry 
+                    ON notifications(delivery_status, next_retry_at) 
+                    WHERE delivery_status = 'failed';
 
-                    -- Delete old audit logs
-                    DELETE FROM audit_logs WHERE retention_until < NOW();
+                    -- Create function for automatic cleanup
+                    CREATE OR REPLACE FUNCTION cleanup_expired_data()
+                    RETURNS INTEGER AS $$
+                    DECLARE
+                        deleted_count INTEGER := 0;
+                    BEGIN
+                        -- Delete expired candidates (cascades to applications and notifications)
+                        DELETE FROM candidates WHERE expires_at < NOW();
+                        GET DIAGNOSTICS deleted_count = ROW_COUNT;
 
-                    -- Update job listing application counts
-                    UPDATE job_listings 
-                    SET applications_count = (
-                        SELECT COUNT(*) 
-                        FROM applications 
-                        WHERE job_listing_id = job_listings.id
-                    );
+                        -- Delete old audit logs
+                        DELETE FROM audit_logs WHERE retention_until < NOW();
 
-                    RETURN deleted_count;
-                END;
-                $ LANGUAGE plpgsql;
-
-                -- Create trigger for updating application counts
-                CREATE OR REPLACE FUNCTION update_application_count()
-                RETURNS TRIGGER AS $
-                BEGIN
-                    IF TG_OP = 'INSERT' THEN
+                        -- Update job listing application counts
                         UPDATE job_listings 
-                        SET applications_count = applications_count + 1
-                        WHERE id = NEW.job_listing_id;
-                        RETURN NEW;
-                    ELSIF TG_OP = 'DELETE' THEN
-                        UPDATE job_listings 
-                        SET applications_count = GREATEST(applications_count - 1, 0)
-                        WHERE id = OLD.job_listing_id;
-                        RETURN OLD;
-                    END IF;
-                    RETURN NULL;
-                END;
-                $ LANGUAGE plpgsql;
+                        SET applications_count = (
+                            SELECT COUNT(*) 
+                            FROM applications 
+                            WHERE job_listing_id = job_listings.id
+                        );
 
-                DROP TRIGGER IF EXISTS trigger_application_count ON applications;
-                CREATE TRIGGER trigger_application_count
-                    AFTER INSERT OR DELETE ON applications
-                    FOR EACH ROW EXECUTE FUNCTION update_application_count();
-            """))
+                        RETURN deleted_count;
+                    END;
+                    $$ LANGUAGE plpgsql;
+
+                    -- Create trigger for updating application counts
+                    CREATE OR REPLACE FUNCTION update_application_count()
+                    RETURNS TRIGGER AS $$
+                    BEGIN
+                        IF TG_OP = 'INSERT' THEN
+                            UPDATE job_listings 
+                            SET applications_count = applications_count + 1
+                            WHERE id = NEW.job_listing_id;
+                            RETURN NEW;
+                        ELSIF TG_OP = 'DELETE' THEN
+                            UPDATE job_listings 
+                            SET applications_count = GREATEST(applications_count - 1, 0)
+                            WHERE id = OLD.job_listing_id;
+                            RETURN OLD;
+                        END IF;
+                        RETURN NULL;
+                    END;
+                    $$ LANGUAGE plpgsql;
+
+                    DROP TRIGGER IF EXISTS trigger_application_count ON applications;
+                    CREATE TRIGGER trigger_application_count
+                        AFTER INSERT OR DELETE ON applications
+                        FOR EACH ROW EXECUTE FUNCTION update_application_count();
+                """))
+            elif dialect == 'sqlite':
+                # SQLite specific indexes (no CONCURRENTLY support)
+                await conn.execute(text("""
+                    -- Create additional indexes for performance
+                    CREATE INDEX IF NOT EXISTS idx_candidates_session_expires 
+                    ON candidates(session_id, expires_at);
+
+                    CREATE INDEX IF NOT EXISTS idx_applications_status_score 
+                    ON applications(status, match_score);
+
+                    CREATE INDEX IF NOT EXISTS idx_notifications_retry 
+                    ON notifications(delivery_status, next_retry_at) 
+                    WHERE delivery_status = 'failed';
+                """))
+                logger.info("Skipping PostgreSQL-specific functions for SQLite")
+            else:
+                logger.warning(f"Unsupported database dialect: {dialect}. Only basic tables will be created.")
+
 
         logger.info("✅ Database tables created successfully")
 

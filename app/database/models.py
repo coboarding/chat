@@ -20,7 +20,8 @@ from sqlalchemy import (
     Index,
     CheckConstraint
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.sql import func
@@ -58,15 +59,15 @@ class Candidate(Base, UUIDMixin, TimestampMixin):
     experience_years = Column(Integer, default=0)
 
     # Skills and qualifications (stored as JSON array)
-    skills = Column(JSONB, default=list)
-    programming_languages = Column(JSONB, default=list)
-    frameworks = Column(JSONB, default=list)
-    certifications = Column(JSONB, default=list)
-    languages = Column(JSONB, default=list)
+    skills = Column(JSON, default=list)
+    programming_languages = Column(JSON, default=list)
+    frameworks = Column(JSON, default=list)
+    certifications = Column(JSON, default=list)
+    languages = Column(JSON, default=list)
 
     # Education and experience (stored as JSON objects)
-    education = Column(JSONB, default=list)
-    experience = Column(JSONB, default=list)
+    education = Column(JSON, default=list)
+    experience = Column(JSON, default=list)
 
     # Social profiles
     linkedin = Column(String(500))
@@ -74,7 +75,7 @@ class Candidate(Base, UUIDMixin, TimestampMixin):
     website = Column(String(500))
 
     # Complete CV data for backup/audit
-    cv_data = Column(JSONB)
+    cv_data = Column(JSON)
 
     # File information
     file_path = Column(String(500))
@@ -94,6 +95,12 @@ class Candidate(Base, UUIDMixin, TimestampMixin):
 
     # Relationships
     applications = relationship("Application", back_populates="candidate", cascade="all, delete-orphan")
+    sessions = relationship(
+        "CandidateSession", 
+        back_populates="candidate",
+        cascade="all, delete-orphan",
+        lazy="dynamic"
+    )
 
     # Constraints
     __table_args__ = (
@@ -164,14 +171,14 @@ class JobListing(Base, UUIDMixin, TimestampMixin):
     relocation_assistance = Column(Boolean, default=False)
 
     # Requirements and qualifications
-    requirements = Column(JSONB, default=list)  # Technical requirements
-    nice_to_have = Column(JSONB, default=list)  # Preferred qualifications
-    languages_required = Column(JSONB, default=list)  # Language requirements
+    requirements = Column(JSON, default=list)  # Technical requirements
+    nice_to_have = Column(JSON, default=list)  # Preferred qualifications
+    languages_required = Column(JSON, default=list)  # Language requirements
 
     # Job details
     job_description = Column(Text)
-    responsibilities = Column(JSONB, default=list)
-    benefits = Column(JSONB, default=list)
+    responsibilities = Column(JSON, default=list)
+    benefits = Column(JSON, default=list)
 
     # Compensation
     salary_min = Column(Integer)
@@ -186,12 +193,12 @@ class JobListing(Base, UUIDMixin, TimestampMixin):
     response_time_hours = Column(Integer, default=24)
 
     # Application process
-    application_process = Column(JSONB, default=dict)
+    application_process = Column(JSON, default=dict)
     technical_interview = Column(Boolean, default=True)
     take_home_assignment = Column(Boolean, default=False)
 
     # Notification configuration
-    notification_config = Column(JSONB, default=dict)
+    notification_config = Column(JSON, default=dict)
 
     # Status and visibility
     active = Column(Boolean, default=True, index=True)
@@ -280,22 +287,22 @@ class Application(Base, UUIDMixin, TimestampMixin):
     match_score = Column(DECIMAL(5, 2), default=0.00)  # 0.00 to 100.00
     skills_match_count = Column(Integer, default=0)
     skills_total_count = Column(Integer, default=0)
-    matching_skills = Column(JSONB, default=list)
-    missing_skills = Column(JSONB, default=list)
+    matching_skills = Column(JSON, default=list)
+    missing_skills = Column(JSON, default=list)
 
     # Application status workflow
     status = Column(String(50), default='pending', nullable=False, index=True)
     # Status flow: pending -> screening -> technical_questions -> interview -> offer -> hired/rejected
 
     # Communication and conversation data
-    conversation_data = Column(JSONB, default=dict)
+    conversation_data = Column(JSON, default=dict)
     last_message_at = Column(DateTime)
     candidate_last_seen = Column(DateTime)
     employer_last_seen = Column(DateTime)
 
     # Technical validation (anti-spam)
-    technical_questions = Column(JSONB, default=list)
-    technical_answers = Column(JSONB, default=list)
+    technical_questions = Column(JSON, default=list)
+    technical_answers = Column(JSON, default=list)
     technical_score = Column(DECIMAL(5, 2))
     technical_validated = Column(Boolean, default=False)
 
@@ -397,7 +404,7 @@ class Notification(Base, UUIDMixin, TimestampMixin):
 
     # Message content
     subject = Column(String(500))
-    message_data = Column(JSONB)
+    message_data = Column(JSON)
     template_used = Column(String(100))
 
     # Delivery tracking
@@ -482,14 +489,14 @@ class AuditLog(Base, UUIDMixin, TimestampMixin):
     table_name = Column(String(100))
 
     # Data tracking
-    old_data = Column(JSONB)
-    new_data = Column(JSONB)
-    changes = Column(JSONB)  # Specific fields that changed
+    old_data = Column(JSON)
+    new_data = Column(JSON)
+    changes = Column(JSON)  # Specific fields that changed
 
     # Request details
     endpoint = Column(String(255))
     http_method = Column(String(10))
-    request_data = Column(JSONB)
+    request_data = Column(JSON)
     response_status = Column(Integer)
 
     # GDPR compliance
@@ -553,7 +560,7 @@ class CandidateSession(Base, UUIDMixin, TimestampMixin):
     session_token = Column(String(255), unique=True, nullable=False, index=True)
     ip_address = Column(String(45), nullable=False)
     user_agent = Column(Text)
-    device_info = Column(JSONB)
+    device_info = Column(JSON)
     
     # Session timestamps
     login_at = Column(DateTime, default=func.now(), nullable=False)
@@ -576,8 +583,7 @@ class CandidateSession(Base, UUIDMixin, TimestampMixin):
     __table_args__ = (
         Index('idx_candidate_sessions_token', 'session_token', unique=True),
         Index('idx_candidate_sessions_active', 'is_active', 'expires_at'),
-        Index('idx_candidate_sessions_candidate', 'candidate_id', 'is_active'),
-        Index('idx_candidate_sessions_compound', 'is_active', 'expires_at')
+        Index('idx_candidate_sessions_candidate', 'candidate_id', 'is_active')
     )
     
     def is_expired(self) -> bool:
