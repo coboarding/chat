@@ -50,8 +50,16 @@ class CVProcessor:
                 return_exceptions=True
             )
             
+            # Filter out any exceptions from results
+            filtered_results = []
+            for result in results:
+                if not isinstance(result, Exception):
+                    filtered_results.append(result)
+                else:
+                    print(f"Warning: A CV processing method failed: {result}")
+            
             # Merge results from different models
-            final_result = await self._merge_extraction_results(results, text_content)
+            final_result = await self._merge_extraction_results(filtered_results, text_content)
             
             # Add file metadata
             final_result['file_path'] = str(temp_path)

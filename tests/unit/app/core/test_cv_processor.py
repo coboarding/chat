@@ -44,16 +44,20 @@ async def test_process_cv_success(cv_processor, mock_uploaded_file):
     }
     cv_processor.ollama_client.chat.return_value = mock_response
     
-    # Mock file operations
+    # Mock file operations and methods
     with patch('builtins.open', mock_open()) as mock_file, \
          patch('pathlib.Path.mkdir'), \
          patch('pathlib.Path.exists', return_value=True), \
-         patch('PyPDF2.PdfReader') as mock_pdf_reader:
-        
-        # Mock PDF reader
-        mock_page = MagicMock()
-        mock_page.extract_text.return_value = "Test CV content"
-        mock_pdf_reader.return_value.pages = [mock_page]
+         patch('PyPDF2.PdfReader') as mock_pdf_reader, \
+         patch.object(cv_processor, '_extract_text', return_value="Test CV content") as mock_extract, \
+         patch.object(cv_processor, '_process_with_mistral', return_value={
+             "name": "John Doe",
+             "email": "john@example.com",
+             "skills": ["Python", "Docker"],
+             "experience": [{"position": "Developer", "company": "Test Inc"}]
+         }) as mock_mistral, \
+         patch.object(cv_processor, '_process_with_visual_llm', return_value={}) as mock_visual, \
+         patch.object(cv_processor, '_process_with_spacy', return_value={}) as mock_spacy:
         
         # Call the method
         result = await cv_processor.process_cv(mock_uploaded_file)
@@ -63,6 +67,10 @@ async def test_process_cv_success(cv_processor, mock_uploaded_file):
         assert "Python" in result["skills"]
         assert result["experience"][0]["position"] == "Developer"
         assert "file_path" in result
+        
+        # Verify mocks were called
+        mock_extract.assert_called_once()
+        mock_mistral.assert_called_once_with("Test CV content")
 
 @pytest.mark.asyncio
 async def test_extract_pdf_text(cv_processor):
@@ -112,6 +120,13 @@ async def test_process_with_mistral(cv_processor):
         # Assertions
         assert result == expected_response
         cv_processor.ollama_client.chat.assert_called_once()
+        
+        # Test with invalid JSON response
+        cv_processor.ollama_client.chat.return_value = {
+            "message": {"content": "invalid json"}
+        }
+        result = await cv_processor._process_with_mistral(test_text)
+        assert result == {}
 
 @pytest.mark.asyncio
 async def test_merge_extraction_results(cv_processor):
