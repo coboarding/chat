@@ -102,5 +102,30 @@ __all__ = [
     'log_audit_event'
 ]
 
-# Initialize database on import
-init_database()
+# Initialize database on first use
+_db_initialized = False
+
+async def ensure_db_initialized():
+    """Ensure the database is initialized when needed"""
+    global _db_initialized
+    if not _db_initialized:
+        from .connection import init_database
+        await init_database()
+        _db_initialized = True
+
+# Initialize database on import if running in a sync context
+import asyncio
+import os
+
+if os.environ.get("PYTEST_RUN_CONFIG") != "true":  # Skip during tests
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # If there's an event loop running, create a task
+            loop.create_task(ensure_db_initialized())
+        else:
+            # Otherwise, run it directly
+            loop.run_until_complete(ensure_db_initialized())
+    except RuntimeError:
+        # No event loop, will initialize on first use
+        pass
