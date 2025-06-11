@@ -31,11 +31,86 @@ coBoarding is a comprehensive "speed hiring" platform that connects tech talent 
 ## 🚀 Features
 
 ### For Job Seekers
-- **📄 Intelligent CV Processing** - AI extracts and structures your experience using local LLM models
+- **📄 Intelligent CV Processing** - AI extracts and structures your experience using local LLM models (Mistral, LLaVA)
 - **🎯 Smart Job Matching** - Get matched with relevant positions based on skills and preferences
 - **💬 Real-time Communication** - Chat directly with employers through integrated messaging
 - **🤖 Automated Applications** - Forms filled automatically using your CV data
 - **⚡ 24-Hour Response SLA** - Employers commit to responding within 24 hours
+
+## 🛠️ CV Processor
+
+The CV Processor is a core component that handles CV/Resume parsing and information extraction using AI models.
+
+### Key Features
+
+- **Multi-format Support**: Parses PDF, DOCX, and plain text CVs
+- **AI-Powered Extraction**: Uses Mistral and LLaVA models for accurate information extraction
+- **Structured Output**: Returns standardized JSON with candidate information
+- **Test Mode**: Built-in testing support with mock responses
+- **Python 3.12+**: Optimized for the latest Python version
+
+### Installation
+
+```bash
+# Install required dependencies
+pip install -r requirements.txt
+
+# Install development dependencies
+pip install -r requirements-dev.txt
+```
+
+### Basic Usage
+
+```python
+from app.core.cv_processor import CVProcessor
+import asyncio
+
+async def process_cv(file_path):
+    # Initialize the processor (test_mode=True for development)
+    processor = CVProcessor(test_mode=True)
+    
+    # Process a CV file
+    with open(file_path, 'rb') as f:
+        result = await processor.process_cv(f)
+    
+    return result
+
+# Example usage
+if __name__ == "__main__":
+    result = asyncio.run(process_cv("path/to/cv.pdf"))
+    print(result)
+```
+
+### Testing
+
+Run the test suite with:
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run with coverage report
+pytest --cov=app tests/
+
+# Generate HTML coverage report
+coverage html
+```
+
+## 🐍 Python 3.12 Compatibility
+
+The project is fully compatible with Python 3.12 and takes advantage of its features:
+
+- **Pattern Matching**: Used for cleaner control flow
+- **Type Hints**: Comprehensive type annotations for better code clarity
+- **Async/Await**: Modern asynchronous programming patterns
+- **Performance**: Optimized for Python 3.12's improved performance
+
+### Required Python 3.12+ Features
+
+- Type variable defaults (PEP 695)
+- Improved error messages
+- Faster exception handling
+- Enhanced asyncio performance
 
 ### For Employers
 - **📢 Instant Notifications** - Multi-channel alerts for new candidates
@@ -57,7 +132,11 @@ coBoarding is a comprehensive "speed hiring" platform that connects tech talent 
 - **LLM**: Ollama (Mistral, LLaVA)
 - **NLP**: spaCy, Transformers
 - **CV Processing**: Custom CV processor with multi-model extraction
+  - Extracts: Name, contact info, skills, experience, education
+  - Supports: PDF, DOCX, plain text
+  - Handles: Multiple languages, various CV formats
 - **Computer Vision**: OpenCV, Tesseract OCR
+- **Text Processing**: Regex patterns, custom text cleaning
 
 ### Frontend
 - **Web Interface**: Streamlit
@@ -74,6 +153,9 @@ coBoarding is a comprehensive "speed hiring" platform that connects tech talent 
 - **Package Management**: pip, setuptools
 - **Environment Management**: venv, pyenv
 - **Documentation**: MkDocs, mkdocstrings
+- **Code Quality**: black, isort, flake8, mypy
+- **Testing**: pytest, pytest-cov, pytest-asyncio
+- **Linting**: Pre-commit hooks for code quality
 
 ## 🚀 Quick Start
 
