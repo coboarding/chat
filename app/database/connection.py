@@ -154,94 +154,94 @@ async def create_tables() -> None:
         raise
 
 
-async def close_database() -> None:
-    """Close database connections"""
-    global engine
+async def create_postgresql_indexes(conn) -> None:
+    """Create PostgreSQL-specific indexes."""
+    await conn.execute(text("""
+        -- Create additional indexes for performance
+        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_candidates_session_expires 
+        ON candidates(session_id, expires_at);
 
-    if engine:
-        logger.info("Closing database connections...")
+        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_applications_status_score 
+        ON applications(status, match_score DESC);
 
-    try:
-        logger.info("Initializing database connection...")
-
-        # Create engine
-        engine = create_engine()
-
-        # Create session factory
-        async_session_factory = async_sessionmaker(
-            engine,
-            class_=AsyncSession,
-            expire_on_commit=False,
-            autoflush=True,
-            autocommit=False
-        )
-
-        # Test connection
-        async with engine.begin() as conn:
-            await conn.execute(text("SELECT 1"))
-
-        logger.info("✅ Database connection established successfully")
-
-        # Create tables if they don't exist
-        await create_tables()
-
-        # Create tables
-        await conn.run_sync(Base.metadata.create_all)
-
-        # Get database dialect
-        dialect = engine.dialect.name
-        logger.info(f"Using database dialect: {dialect}")
-
-        if dialect == 'postgresql':
-            # PostgreSQL specific indexes and functions
-            await conn.execute(text("""
-                -- Create additional indexes for performance
-                CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_candidates_session_expires 
-                ON candidates(session_id, expires_at);
-
-                CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_applications_status_score 
-                ON applications(status, match_score DESC);
-
-                CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_retry 
-                ON notifications(delivery_status, next_retry_at) 
-                WHERE delivery_status = 'failed';
-
-                -- Create function for automatic cleanup
-                CREATE OR REPLACE FUNCTION cleanup_expired_data()
-                RETURNS INTEGER AS $$
-                DECLARE
-                    deleted_count INTEGER := 0;
-                BEGIN
-                    -- Delete expired candidates (cascades to applications and notifications)
-                    DELETE FROM candidates WHERE expires_at < NOW();
-                    RETURN deleted_count;
-                END;
-                $$ LANGUAGE plpgsql;
-            """))
-        elif dialect == 'sqlite':
-            # SQLite specific indexes (no CONCURRENTLY support)
-            await conn.execute(text("""
-                -- Create additional indexes for performance
-                CREATE INDEX IF NOT EXISTS idx_candidates_session_expires 
-                ON candidates(session_id, expires_at);
-
-                CREATE INDEX IF NOT EXISTS idx_applications_status_score 
-                ON applications(status, match_score);
-
-                CREATE INDEX IF NOT EXISTS idx_notifications_retry 
-                ON notifications(delivery_status, next_retry_at) 
-                WHERE delivery_status = 'failed';
-            """))
-            logger.info("Skipping PostgreSQL-specific functions for SQLite")
-        else:
-            logger.warning(f"Unsupported database dialect: {dialect}. Only basic tables will be created.")
+        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_retry 
+        ON notifications(delivery_status, next_retry_at) 
+        WHERE delivery_status = 'failed';
+    """))
 
 
-        logger.info("✅ Database tables created successfully")
+async def create_postgresql_functions(conn) -> None:
+    """Create PostgreSQL-specific functions."""
+    await conn.execute(text("""
+        -- Create function for automatic cleanup
+        CREATE OR REPLACE FUNCTION cleanup_expired_data()
+        RETURNS INTEGER AS $$
+        DECLARE
+            deleted_count INTEGER := 0;
+        BEGIN
+            -- Delete expired candidates (cascades to applications and notifications)
+            DELETE FROM candidates WHERE expires_at < NOW();
+            GET DIAGNOSTICS deleted_count = ROW_COUNT;
 
-    except Exception as e:
-        logger.error(f"❌ Table creation failed: {e}")
-        raise
+            -- Delete old audit logs
+            DELETE FROM audit_logs WHERE retention_until < NOW();
+
+            -- Update job listing application counts
+            UPDATE job_listings 
+            SET applications_count = (
+                SELECT COUNT(*) 
+                FROM applications 
+                WHERE job_listing_id = job_listings.id
+            );
+
+            RETURN deleted_count;
+        END;
+        $$ LANGUAGE plpgsql;
+
+        -- Create trigger for updating application counts
+        CREATE OR REPLACE FUNCTION update_application_count()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            IF TG_OP = 'INSERT' THEN
+                UPDATE job_listings 
+                SET applications_count = applications_count + 1
+                WHERE id = NEW.job_listing_id;
+                RETURN NEW;
+            ELSIF TG_OP = 'DELETE' THEN
+                UPDATE job_listings 
+                SET applications_count = GREATEST(applications_count - 1, 0)
+                WHERE id = OLD.job_listing_id;
+                RETURN OLD;
+            END IF;
+            RETURN NULL;
+        END;
+        $$ LANGUAGE plpgsql;
+
+        DROP TRIGGER IF EXISTS trigger_application_count ON applications;
+        CREATE TRIGGER trigger_application_count
+            AFTER INSERT OR DELETE ON applications
+            FOR EACH ROW EXECUTE FUNCTION update_application_count();
+    """))
+
+
+async def create_sqlite_indexes(conn) -> None:
+    """Create SQLite-specific indexes."""
+    await conn.execute(text("""
+        -- Create additional indexes for performance
+        CREATE INDEX IF NOT EXISTS idx_candidates_session_expires 
+        ON candidates(session_id, expires_at);
+
+        CREATE INDEX IF NOT EXISTS idx_applications_status_score 
+        ON applications(status, match_score);
+
+        CREATE INDEX IF NOT EXISTS idx_notifications_retry 
+        ON notifications(delivery_status, next_retry_at) 
+        WHERE delivery_status = 'failed';
+
+        -- SQLite doesn't support triggers with the same functionality as PostgreSQL
+        -- Application count updates will need to be handled in the application code
+    """))
+    logger.info("Created SQLite-specific indexes")
 
 
 async def close_database() -> None:
