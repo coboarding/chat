@@ -2,8 +2,8 @@
 
 # Variables
 VENV = venv
-# Use pyenv-managed Python if available, otherwise fall back to venv
-PYTHON = $(shell command -v python 2>/dev/null || echo $(VENV)/bin/python3.12)
+# Enforce Python 3.12 usage
+PYTHON = $(shell command -v python3.12 2>/dev/null || echo $(VENV)/bin/python3.12)
 PIP = $(VENV)/bin/pip
 PYTHON_VERSION = 3.12
 PORT ?= 8501
