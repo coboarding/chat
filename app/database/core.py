@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
-from sqlalchemy import text
+from sqlalchemy import text, delete
 import asyncpg
 from loguru import logger
 
@@ -356,3 +356,145 @@ async def get_connection_pool_status() -> dict:
         "overflow": pool.overflow(),
         "checkedin": pool.checkedin(),
     }
+
+
+async def get_database_stats() -> dict:
+    """Get database statistics for monitoring and diagnostics"""
+    global engine
+    
+    if not engine:
+        return {"status": "not_initialized"}
+    
+    stats = {}
+    
+    try:
+        async with engine.begin() as conn:
+            # Get table row counts
+            tables_query = """
+                SELECT 
+                    table_name, 
+                    (SELECT count(*) FROM information_schema.columns 
+                     WHERE table_name=t.table_name) as column_count,
+                    pg_total_relation_size(quote_ident(table_name)) as total_bytes
+                FROM information_schema.tables t
+                WHERE table_schema = 'public'
+                ORDER BY total_bytes DESC;
+            """
+            
+            table_stats = await conn.execute(text(tables_query))
+            tables = []
+            
+            for row in table_stats:
+                table_name = row.table_name
+                count_query = f"SELECT COUNT(*) as count FROM {table_name}"
+                count_result = await conn.execute(text(count_query))
+                count = count_result.scalar()
+                
+                tables.append({
+                    "name": table_name,
+                    "rows": count,
+                    "columns": row.column_count,
+                    "size_bytes": row.total_bytes,
+                    "size_mb": round(row.total_bytes / (1024 * 1024), 2)
+                })
+            
+            stats["tables"] = tables
+            
+            # Get database size
+            size_query = "SELECT pg_database_size(current_database()) as size;"
+            size_result = await conn.execute(text(size_query))
+            db_size = size_result.scalar()
+            
+            stats["database_size_bytes"] = db_size
+            stats["database_size_mb"] = round(db_size / (1024 * 1024), 2)
+            
+            # Get connection stats
+            conn_query = """
+                SELECT count(*) as active_connections 
+                FROM pg_stat_activity 
+                WHERE datname = current_database();
+            """
+            conn_result = await conn.execute(text(conn_query))
+            conn_count = conn_result.scalar()
+            
+            stats["active_connections"] = conn_count
+            
+            # Add pool stats
+            stats["pool"] = await get_connection_pool_status()
+            
+            return stats
+    except Exception as e:
+        logger.error(f"Error getting database stats: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+async def run_cleanup() -> dict:
+    """Run database cleanup tasks to remove expired data"""
+    global engine
+    
+    if not engine:
+        return {"status": "not_initialized"}
+    
+    results = {}
+    
+    try:
+        async with engine.begin() as conn:
+            # Check if we're using PostgreSQL
+            if engine.dialect.name == 'postgresql':
+                # Use the database function for cleanup
+                cleanup_result = await conn.execute(text("SELECT cleanup_expired_data()"))
+                deleted_count = cleanup_result.scalar()
+                results["expired_records_deleted"] = deleted_count
+            else:
+                # For other databases, do manual cleanup
+                from datetime import datetime
+                from .models import Candidate
+                
+                # Delete expired candidates (cascades to applications and notifications)
+                delete_stmt = delete(Candidate).where(Candidate.expires_at < datetime.utcnow())
+                delete_result = await conn.execute(delete_stmt)
+                results["expired_candidates_deleted"] = delete_result.rowcount
+            
+            # Vacuum analyze (PostgreSQL only)
+            if engine.dialect.name == 'postgresql':
+                try:
+                    # VACUUM can't run in a transaction, so we need a separate connection
+                    # This is a bit hacky but works for PostgreSQL
+                    db_url = get_database_url()
+                    conn_params = db_url.replace('postgresql+asyncpg://', '')
+                    
+                    # Extract connection parameters
+                    user_pass, host_db = conn_params.split('@')
+                    if ':' in user_pass:
+                        user, password = user_pass.split(':', 1)
+                    else:
+                        user, password = user_pass, ''
+                        
+                    host_port, db = host_db.split('/', 1)
+                    if ':' in host_port:
+                        host, port = host_port.split(':', 1)
+                    else:
+                        host, port = host_port, '5432'
+                    
+                    # Connect directly with asyncpg
+                    conn = await asyncpg.connect(
+                        user=user,
+                        password=password,
+                        database=db,
+                        host=host,
+                        port=port
+                    )
+                    
+                    # Run vacuum analyze
+                    await conn.execute('VACUUM ANALYZE')
+                    await conn.close()
+                    
+                    results["vacuum_analyze"] = "completed"
+                except Exception as e:
+                    logger.warning(f"VACUUM ANALYZE failed: {e}")
+                    results["vacuum_analyze"] = f"failed: {e}"
+        
+        return {"status": "success", "results": results}
+    except Exception as e:
+        logger.error(f"Error running database cleanup: {e}")
+        return {"status": "error", "message": str(e)}
