@@ -37,6 +37,13 @@ coBoarding is a comprehensive "speed hiring" platform that connects tech talent 
 - **🤖 Automated Applications** - Forms filled automatically using your CV data
 - **⚡ 24-Hour Response SLA** - Employers commit to responding within 24 hours
 
+### For Employers
+- **📢 Instant Notifications** - Multi-channel alerts for new candidates
+- **🔍 Technical Validation** - AI-generated questions validate candidate skills
+- **📊 Smart Matching** - Candidates ranked by relevance and fit
+- **💼 Integration Ready** - Works with existing HR tools
+- **🇪🇺 GDPR Compliant** - Built for European privacy regulations
+
 ## 🛠️ CV Processor
 
 The CV Processor is a core component that handles CV/Resume parsing and information extraction using AI models.
@@ -127,6 +134,9 @@ The project is fully compatible with Python 3.12 and takes advantage of its feat
 - **Database**: PostgreSQL (production), SQLite (development)
 - **ORM**: SQLAlchemy 2.0
 - **Migrations**: Alembic
+- **Async Support**: asyncio, aiohttp
+- **Testing**: pytest, pytest-asyncio, pytest-cov
+- **Code Quality**: black, isort, flake8, mypy
 
 ### AI/ML Components
 - **LLM**: Ollama (Mistral, LLaVA)
@@ -136,6 +146,14 @@ The project is fully compatible with Python 3.12 and takes advantage of its feat
   - Supports: PDF, DOCX, plain text
   - Handles: Multiple languages, various CV formats
 - **Computer Vision**: OpenCV, Tesseract OCR
+- **Text Processing**: Regex patterns, custom text cleaning
+
+### Development Tools
+- **Package Management**: pip, setuptools
+- **Environment Management**: venv, pyenv
+- **Documentation**: MkDocs, mkdocstrings
+- **Linting/Formatting**: pre-commit hooks
+- **CI/CD**: GitHub Actions
 - **Text Processing**: Regex patterns, custom text cleaning
 
 ### Frontend
@@ -182,6 +200,106 @@ The project is fully compatible with Python 3.12 and takes advantage of its feat
   ollama pull mistral
   ollama pull llava
   ```
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/coboarding.git
+   cd coboarding/chat
+   ```
+
+2. **Set up virtual environment**
+   ```bash
+   # Create and activate virtual environment
+   python3.12 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   # Install base requirements
+   pip install -r requirements.txt
+   
+   # Install development dependencies
+   pip install -r requirements-dev.txt
+   ```
+
+4. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+### Development
+
+#### Running the Application
+
+```bash
+# Start the development server
+make run
+
+# Or with auto-reload
+make dev
+```
+
+#### Database Setup
+
+```bash
+# Initialize the database
+make db-init
+
+# Create a new migration
+make db-migrate msg="Your migration message"
+
+# Apply migrations
+make db-upgrade
+```
+
+### Testing
+
+Run the test suite:
+
+```bash
+# Run all tests
+make test
+
+# Run with coverage report
+make test-cov
+
+# Run specific test file
+pytest tests/test_file.py -v
+
+# Run specific test case
+pytest tests/test_file.py::test_function -v
+```
+
+#### Test Coverage
+
+```bash
+# Generate coverage report
+make test-cov
+
+# Open HTML coverage report
+open htmlcov/index.html  # On macOS
+xdg-open htmlcov/index.html  # On Linux
+```
+
+### Code Quality
+
+```bash
+# Run linters
+make lint
+
+# Format code
+make format
+
+# Run type checking
+make typecheck
+
+# Run all checks
+make check-all
+```
 
 - **System Dependencies**
   ```bash
@@ -366,15 +484,120 @@ CORS_ORIGINS=http://localhost:8501,http://localhost:3000
 4. Run security scans regularly
 5. Follow the principle of least privilege for database access
 
+### Data Protection
+
+- All data is encrypted at rest and in transit
+- Regular security audits and penetration testing
+- Role-based access control (RBAC)
+- Secure credential management using environment variables
+
+### GDPR Compliance
+
+- Right to be forgotten implementation
+- Data portability
+- Consent management
+- Data processing agreements
+- Regular data retention policy enforcement
+
+### Secure Development
+
+- Dependency vulnerability scanning
+- Static code analysis in CI/CD pipeline
+- Secrets scanning
+- Regular dependency updates
+
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
+We welcome contributions from the community! Here's how you can help:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. **Report Bugs**
+   - Check existing issues to avoid duplicates
+   - Provide detailed reproduction steps
+   - Include error logs and screenshots if applicable
+
+2. **Suggest Enhancements**
+   - Open an issue to discuss your idea
+   - Check for existing feature requests
+   - Be specific about the use case
+
+3. **Submit Code Changes**
+   ```bash
+   # Fork the repository
+   git clone https://github.com/yourusername/coboarding.git
+   cd coboarding/chat
+   
+   # Set up development environment
+   make setup
+   
+   # Create a feature branch
+   git checkout -b feature/amazing-feature
+   
+   # Make your changes
+   # Run tests and checks
+   make check-all
+   
+   # Commit and push
+   git commit -m "Add amazing feature"
+   git push origin feature/amazing-feature
+   ```
+
+4. **Code Review Process**
+   - All changes require code review
+   - At least one approval required for merging
+   - CI/CD pipeline must pass
+   - Code coverage should not decrease significantly
+
+5. **Code Style**
+   - Follow PEP 8 guidelines
+   - Use type hints for all new code
+   - Keep functions small and focused
+   - Write docstrings for public functions and classes
+   - Add tests for new functionality
+
+6. **Documentation**
+   - Update relevant documentation
+   - Add examples for new features
+   - Keep the README up to date
+
+### Development Workflow
+
+1. Create an issue describing the bug or feature
+2. Assign the issue to yourself
+3. Create a feature branch from `main`
+4. Make your changes with atomic commits
+5. Push your changes and create a pull request
+6. Address any review comments
+7. Once approved, squash and merge
+
+### Commit Message Guidelines
+
+```
+<type>(<scope>): <subject>
+
+[optional body]
+
+[optional footer]
+```
+
+**Types**:
+- feat: A new feature
+- fix: A bug fix
+- docs: Documentation changes
+- style: Code style changes (formatting, etc.)
+- refactor: Code change that neither fixes a bug nor adds a feature
+- test: Adding missing tests or correcting existing tests
+- chore: Changes to the build process or auxiliary tools
+
+**Example**:
+```
+feat(cv): add support for DOCX files
+
+- Added docx2txt for DOCX parsing
+- Updated CV processor to handle DOCX format
+- Added tests for DOCX processing
+
+Closes #123
+```
 
 ### Development Workflow
 
