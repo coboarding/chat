@@ -1213,6 +1213,75 @@ async def get_application_by_session_and_job(session: AsyncSession, session_id: 
         raise
 
 
+async def anonymize_candidate_data(
+    session: AsyncSession, 
+    candidate_id: str,
+    anonymization_fields: dict = None
+) -> bool:
+    """
+    Anonymize candidate data for GDPR compliance
+    
+    Args:
+        session: Database session
+        candidate_id: ID of the candidate to anonymize
+        anonymization_fields: Dictionary of fields to anonymize and their values
+        
+    Returns:
+        bool: True if anonymization was successful, False otherwise
+    """
+    from .models import Candidate
+    from sqlalchemy import update
+    import uuid
+    
+    # Default fields to anonymize if not provided
+    if anonymization_fields is None:
+        anonymization_fields = {
+            'first_name': 'Anonymized',
+            'last_name': 'User',
+            'email': f'anonymous_{uuid.uuid4().hex[:12]}@example.com',
+            'phone': None,
+            'address': None,
+            'city': None,
+            'country': None,
+            'postal_code': None,
+            'linkedin_url': None,
+            'github_url': None,
+            'website': None,
+            'summary': 'Data anonymized for privacy',
+            'is_anonymized': True,
+            'anonymized_at': datetime.utcnow()
+        }
+    
+    try:
+        # Update candidate with anonymized data
+        stmt = (
+            update(Candidate)
+            .where(Candidate.id == candidate_id)
+            .values(**anonymization_fields)
+        )
+        
+        result = await session.execute(stmt)
+        await session.commit()
+        
+        # Log the anonymization
+        await log_audit_event(
+            session=session,
+            event_type='candidate_anonymized',
+            entity_type='candidate',
+            entity_id=candidate_id,
+            details={'fields_anonymized': list(anonymization_fields.keys())},
+            user_id='system',
+            user_type='system'
+        )
+        
+        return result.rowcount > 0
+        
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error anonymizing candidate {candidate_id}: {str(e)}")
+        raise
+
+
 async def get_candidate_by_email(session: AsyncSession, email: str):
     """
     Get a candidate by their email address
@@ -1266,24 +1335,8 @@ async def delete_candidate_data(session: AsyncSession, candidate_id: str, anonym
         )
         
         if anonymize:
-            # Anonymize personal data
-            stmt = (
-                update(Candidate)
-                .where(Candidate.id == candidate_id)
-                .values(
-                    email=f'anonymized-{candidate_id}@deleted.local',
-                    first_name='Anonymous',
-                    last_name='User',
-                    phone_number=None,
-                    address=None,
-                    date_of_birth=None,
-                    profile_picture=None,
-                    resume_path=None,
-                    is_active=False,
-                    deleted_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow()
-                )
-            )
+            # Use the anonymize function
+            return await anonymize_candidate_data(session, candidate_id)
         else:
             # Hard delete the candidate and related data
             # Note: This will cascade to related records if foreign key constraints are set up that way
@@ -1300,6 +1353,53 @@ async def delete_candidate_data(session: AsyncSession, candidate_id: str, anonym
     except Exception as e:
         await session.rollback()
         logger.error(f"Error deleting candidate data for {candidate_id}: {str(e)}")
+        raise
+
+
+async def anonymize_candidate_data(session: AsyncSession, candidate_id: str):
+    """
+    Anonymize a candidate's personal data for GDPR compliance
+    
+    Args:
+        session: Database session
+        candidate_id: ID of the candidate to anonymize
+        
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    from datetime import datetime
+    from sqlalchemy import update
+    from .models import Candidate
+    
+    try:
+        # Anonymize personal data
+        stmt = (
+            update(Candidate)
+            .where(Candidate.id == candidate_id)
+            .values(
+                email=f'anonymized-{candidate_id}@deleted.local',
+                first_name='Anonymous',
+                last_name='User',
+                phone_number=None,
+                address=None,
+                date_of_birth=None,
+                profile_picture=None,
+                resume_path=None,
+                is_active=False,
+                deleted_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+        )
+        
+        result = await session.execute(stmt)
+        await session.commit()
+        
+        # Check if any rows were updated
+        return result.rowcount > 0
+        
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error anonymizing candidate data for {candidate_id}: {str(e)}")
         raise
 
 
