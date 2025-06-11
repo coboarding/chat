@@ -630,6 +630,26 @@ async def update_candidate_data(session: AsyncSession, candidate_id: str, update
     return True
 
 
+async def get_application(session: AsyncSession, application_id: str):
+    """
+    Get an application by ID
+    
+    Args:
+        session: Database session
+        application_id: ID of the application to retrieve
+        
+    Returns:
+        Application or None: The application if found, None otherwise
+    """
+    from .models import Application
+    from sqlalchemy.future import select
+    
+    result = await session.execute(
+        select(Application).where(Application.id == application_id)
+    )
+    return result.scalars().first()
+
+
 async def get_job_listing(session: AsyncSession, job_id: str):
     """
     Get a job listing by ID
