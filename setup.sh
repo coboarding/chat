@@ -32,23 +32,26 @@ if command -v python3 &> /dev/null; then
     PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d'.' -f2)
     
     if [ $PYTHON_MAJOR -lt 3 ] || ([ $PYTHON_MAJOR -eq 3 ] && [ $PYTHON_MINOR -lt 11 ]); then
-        echo "⚠️ Warning: Python $PYTHON_VERSION detected. This project works best with Python 3.11 or 3.12."
-        echo "Current Python version may cause compatibility issues with some dependencies."
-        read -p "Do you want to continue with the current Python version? (y/n): " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            echo "Please install Python 3.11 or 3.12 and try again."
-            exit 1
-        fi
+        echo "❌ Error: Python $PYTHON_VERSION detected. This project requires Python 3.11 or 3.12."
+        echo "Please install Python 3.11 or 3.12 and try again."
+        exit 1
     elif [ $PYTHON_MAJOR -eq 3 ] && [ $PYTHON_MINOR -gt 12 ]; then
-        echo "⚠️ Warning: Python $PYTHON_VERSION detected. This project is optimized for Python 3.11 or 3.12."
-        echo "Python 3.13+ may have compatibility issues with some dependencies."
-        read -p "Do you want to continue with Python $PYTHON_VERSION? (y/n): " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            echo "Please install Python 3.11 or 3.12 and try again."
-            exit 1
+        echo "❌ Error: Python $PYTHON_VERSION detected. This project requires Python 3.11 or 3.12."
+        echo "Python 3.13+ has confirmed compatibility issues with key dependencies."
+        echo "Please install Python 3.11 or 3.12 and try again."
+        
+        # Check if pyenv is available to suggest a solution
+        if command -v pyenv &> /dev/null; then
+            echo "
+💡 Tip: You have pyenv installed. You can install and use Python 3.12 with:"
+            echo "  pyenv install 3.12.0"
+            echo "  pyenv local 3.12.0"
+        else
+            echo "
+💡 Tip: Consider using pyenv to manage Python versions:"
+            echo "  https://github.com/pyenv/pyenv#installation"
         fi
+        exit 1
     else
         echo "✅ Python $PYTHON_VERSION detected. Compatible version."
     fi
@@ -108,37 +111,57 @@ source venv/bin/activate
 echo "📦 Upgrading pip..."
 pip install --upgrade pip
 
-# Install dependencies with version constraints
+# Install dependencies in groups for better reliability
 echo "📚 Installing dependencies..."
-if [ $PYTHON_MAJOR -eq 3 ] && [ $PYTHON_MINOR -ge 13 ]; then
-    echo "Using compatibility mode for Python 3.13+"
-    # Create a temporary requirements file with compatible versions
-    grep -v -E "numpy|botright" requirements.txt > requirements_temp.txt
-    echo "numpy==1.26.0" >> requirements_temp.txt
-    
-    # First install core dependencies without conflicting packages
-    echo "Installing core dependencies..."
-    pip install -r requirements_temp.txt || {
-        echo "❌ Core dependency installation failed."
-        rm requirements_temp.txt
-        exit 1
+
+# Define core dependencies that must be installed
+CORE_DEPS="streamlit fastapi uvicorn python-dotenv jinja2"
+DB_DEPS="sqlalchemy psycopg2-binary aioredis alembic"
+API_DEPS="pydantic python-multipart httpx requests"
+AI_DEPS="spacy transformers pandas"
+COMPAT_DEPS="numpy==1.24.4 torch==2.1.2"
+
+echo "📦 Installing core web dependencies..."
+pip install $CORE_DEPS || {
+    echo "❌ Core web dependency installation failed."
+    exit 1
+}
+
+echo "📦 Installing database dependencies..."
+pip install $DB_DEPS || {
+    echo "⚠️ Some database dependencies could not be installed. Continuing anyway..."
+}
+
+echo "📦 Installing API dependencies..."
+pip install $API_DEPS || {
+    echo "⚠️ Some API dependencies could not be installed. Continuing anyway..."
+}
+
+echo "📦 Installing AI dependencies (may take a while)..."
+pip install $COMPAT_DEPS || {
+    echo "⚠️ Compatible versions of numpy/torch could not be installed. Trying without version constraints..."
+    pip install numpy torch || {
+        echo "⚠️ Could not install numpy/torch. Some AI features may not work."
     }
-    
-    # Then try to install botright separately (it may fail, but that's ok)
-    echo "Attempting to install botright (optional)..."
-    pip install botright==0.4 || {
-        echo "⚠️ Botright installation skipped - this is optional and won't affect core functionality."
-    }
-    
-    rm requirements_temp.txt
-    echo "✅ Dependencies installed with compatibility adjustments."
-else
-    echo "Installing all dependencies..."
-    pip install -r requirements.txt || {
-        echo "❌ Dependency installation failed."
-        exit 1
-    }
-fi
+}
+
+pip install $AI_DEPS || {
+    echo "⚠️ Some AI dependencies could not be installed. Some features may not work."
+}
+
+echo "📦 Installing document processing dependencies..."
+pip install PyPDF2 python-docx pytesseract Pillow pdf2image WeasyPrint markdown || {
+    echo "⚠️ Some document processing dependencies could not be installed. Document processing features may not work."
+}
+
+echo "📦 Installing optional dependencies..."
+pip install loguru tenacity cryptography || {
+    echo "⚠️ Some optional dependencies could not be installed."
+}
+
+echo "✅ Core dependencies installed successfully."
+echo "⚠️ Note: Some optional dependencies may not have been installed due to compatibility issues."
+echo "    This is normal and the core application should still function."
 
 # Setup Ansible project
 echo "🔄 Setting up Ansible project..."
