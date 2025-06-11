@@ -1,26 +1,28 @@
 ---
 # Tasks for webserver role
-- name: Install Nginx
-  ansible.builtin.package:
-    name: nginx
-    state: present
-  when: ansible_distribution == "Ubuntu"
+- name: Check if Nginx is installed
+  ansible.builtin.shell: which nginx || echo "not installed"
+  register: nginx_check
+  changed_when: false
 
-- name: Configure Nginx
-  ansible.builtin.template:
-    src: nginx.conf.j2
-    dest: /tmp/nginx.conf
-    mode: '0644'
-  notify: Restart Nginx
+- name: Show Nginx status
+  ansible.builtin.debug:
+    msg: "Nginx is {{ 'installed' if 'not installed' not in nginx_check.stdout else 'not installed' }}"
 
 - name: Create web content directory
   ansible.builtin.file:
-    path: /tmp/www
+    path: "{{ ansible_env.HOME }}/ansible_demo/www"
     state: directory
     mode: '0755'
 
 - name: Create test HTML file
   ansible.builtin.template:
     src: index.html.j2
-    dest: /tmp/www/index.html
+    dest: "{{ ansible_env.HOME }}/ansible_demo/www/index.html"
+    mode: '0644'
+
+- name: Create Nginx configuration file
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: "{{ ansible_env.HOME }}/ansible_demo/nginx.conf"
     mode: '0644'

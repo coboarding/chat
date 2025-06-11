@@ -1,40 +1,44 @@
 ---
 # Tasks for database role
-- name: Install SQLite
-  ansible.builtin.package:
-    name: sqlite3
-    state: present
-  when: ansible_distribution == "Ubuntu"
+- name: Check if SQLite is installed
+  ansible.builtin.shell: which sqlite3 || echo "not installed"
+  register: sqlite_check
+  changed_when: false
+
+- name: Show SQLite status
+  ansible.builtin.debug:
+    msg: "SQLite is {{ 'installed' if 'not installed' not in sqlite_check.stdout else 'not installed' }}"
 
 - name: Create database directory
   ansible.builtin.file:
-    path: /tmp/db
+    path: "{{ ansible_env.HOME }}/ansible_demo/db"
     state: directory
     mode: '0755'
 
 - name: Create test database
   ansible.builtin.copy:
     content: ""
-    dest: /tmp/db/test.db
+    dest: "{{ ansible_env.HOME }}/ansible_demo/db/test.db"
     force: no
     mode: '0644'
 
 - name: Initialize database schema
   ansible.builtin.template:
     src: schema.sql.j2
-    dest: /tmp/db/schema.sql
+    dest: "{{ ansible_env.HOME }}/ansible_demo/db/schema.sql"
     mode: '0644'
 
 - name: Apply database schema
   ansible.builtin.shell: |
-    sqlite3 /tmp/db/test.db < /tmp/db/schema.sql
+    sqlite3 "{{ ansible_env.HOME }}/ansible_demo/db/test.db" < "{{ ansible_env.HOME }}/ansible_demo/db/schema.sql"
   args:
-    creates: /tmp/db/.initialized
+    creates: "{{ ansible_env.HOME }}/ansible_demo/db/.initialized"
   register: db_init
+  when: "'not installed' not in sqlite_check.stdout"
 
 - name: Mark database as initialized
   ansible.builtin.file:
-    path: /tmp/db/.initialized
+    path: "{{ ansible_env.HOME }}/ansible_demo/db/.initialized"
     state: touch
     mode: '0644'
-  when: db_init.changed
+  when: db_init is defined and db_init.changed
