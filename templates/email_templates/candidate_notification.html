@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Response from {{ company_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .company-info {
+            background-color: #f1f5f9;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .company-info h3 {
+            margin: 0 0 10px 0;
+            color: #1e40af;
+            font-size: 18px;
+        }
+        .message-box {
+            background-color: #fefefe;
+            border-left: 4px solid #2563eb;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+            transition: transform 0.2s;
+        }
+        .cta-button:hover {
+            transform: translateY(-1px);
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .urgency-badge {
+            display: inline-block;
+            background-color: #ef4444;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Great News!</h1>
+            <p>{{ company_name }} has responded to your application</p>
+        </div>
+
+        <div class="content">
+            {% if urgent %}
+            <div class="urgency-badge">⏰ URGENT RESPONSE</div>
+            {% endif %}
+
+            <div class="company-info">
+                <h3>{{ company_name }}</h3>
+                <p><strong>Position:</strong> {{ position }}</p>
+                <p><strong>Location:</strong> {{ location }}</p>
+                {% if remote %}
+                <p><strong>🏠 Remote Work:</strong> Available</p>
+                {% endif %}
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">{{ match_score }}%</div>
+                    <div class="stat-label">Match Score</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">{{ response_time }}</div>
+                    <div class="stat-label">Response Time</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">{{ skills_matched }}</div>
+                    <div class="stat-label">Skills Matched</div>
+                </div>
+            </div>
+
+            <div class="message-box">
+                <h4>💬 Message from {{ company_name }}:</h4>
+                <p>{{ employer_message }}</p>
+            </div>
+
+            {% if next_steps %}
+            <h4>📋 Next Steps:</h4>
+            <ul>
+                {% for step in next_steps %}
+                <li>{{ step }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{ reply_link }}" class="cta-button">
+                    💬 Reply to {{ company_name }}
+                </a>
+            </div>
+
+            {% if technical_questions %}
+            <div style="background-color: #fef3c7; border-radius: 6px; padding: 15px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #92400e;">⚡ Technical Questions Required</h4>
+                <p style="margin: 0;">Please answer {{ technical_questions|length }} technical questions to proceed with your application.</p>
+                <a href="{{ questions_link }}" style="color: #92400e; text-decoration: none; font-weight: 600;">Answer Questions →</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <p><strong>coBoarding</strong> - Speed Hiring Platform</p>
+            <p>This employer expects a response within 24 hours!</p>
+            <p style="font-size: 12px;">
+                <a href="{{ unsubscribe_link }}" style="color: #6b7280;">Unsubscribe</a> |
+                <a href="{{ privacy_link }}" style="color: #6b7280;">Privacy Policy</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

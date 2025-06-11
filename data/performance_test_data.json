@@ -1,0 +1,72 @@
+{
+  "load_testing_scenarios": {
+    "cv_upload_load": {
+      "description": "Test CV upload performance under load",
+      "concurrent_users": 50,
+      "duration_minutes": 10,
+      "endpoints": [
+        {
+          "method": "POST",
+          "url": "/api/cv/upload",
+          "weight": 100,
+          "files": ["sample_cv_1.pdf", "sample_cv_2.pdf", "sample_cv_3.pdf"]
+        }
+      ],
+      "success_criteria": {
+        "avg_response_time_ms": 5000,
+        "95th_percentile_ms": 10000,
+        "error_rate_percent": 1
+      }
+    },
+
+    "api_mixed_load": {
+      "description": "Mixed API load testing",
+      "concurrent_users": 100,
+      "duration_minutes": 15,
+      "endpoints": [
+        {
+          "method": "POST",
+          "url": "/api/cv/upload",
+          "weight": 20
+        },
+        {
+          "method": "POST",
+          "url": "/api/jobs/match",
+          "weight": 40
+        },
+        {
+          "method": "POST",
+          "url": "/api/chat/message",
+          "weight": 30
+        },
+        {
+          "method": "GET",
+          "url": "/health",
+          "weight": 10
+        }
+      ],
+      "success_criteria": {
+        "avg_response_time_ms": 2000,
+        "95th_percentile_ms": 5000,
+        "error_rate_percent": 2
+      }
+    }
+  },
+
+  "stress_testing": {
+    "database_stress": {
+      "description": "Test database performance limits",
+      "concurrent_connections": 200,
+      "operations_per_second": 1000,
+      "test_duration_minutes": 30
+    },
+
+    "ai_model_stress": {
+      "description": "Test AI model processing limits",
+      "concurrent_cv_processing": 20,
+      "processing_queue_size": 100,
+      "test_duration_minutes": 20
+    }
+  }
+}
+

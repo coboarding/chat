@@ -1,0 +1,562 @@
+# templates/chat_templates/welcome_message.txt
+
+# Welcome message when candidate starts chatting with a company
+CANDIDATE_WELCOME = """
+👋 Hello {candidate_name}!
+
+Thank you for your interest in the {position} position at {company_name}. I'm an AI assistant that will help facilitate communication between you and our hiring team.
+
+📋 **Your Application Summary:**
+• Position: {position}
+• Match Score: {match_score}%
+• Your Experience: {experience_years} years
+• Key Matching Skills: {matching_skills}
+
+💬 **What happens next:**
+1. Our hiring team has been notified about your application
+2. They typically respond within 24 hours
+3. You can ask questions or share additional information here
+4. We'll notify you immediately when they respond
+
+Feel free to ask me anything about the role, company, or application process!
+
+**How can I help you today?**
+"""
+
+# Welcome message when employer joins the chat
+EMPLOYER_WELCOME = """
+👋 Welcome to the chat with {candidate_name}!
+
+📊 **Candidate Summary:**
+• Name: {candidate_name}
+• Position Applied: {position}
+• Match Score: {match_score}%
+• Experience: {experience_years} years
+• Location: {location}
+• Applied: {application_time}
+
+🎯 **Key Skills Match:**
+{matching_skills_list}
+
+💬 **Communication Tips:**
+• Be clear about next steps and timeline
+• Ask specific questions about their experience
+• Mention what excites you about their background
+• Keep the 24-hour response commitment in mind
+
+**What would you like to discuss with {candidate_name}?**
+"""
+
+# Message when both parties are connected
+BOTH_CONNECTED = """
+🎉 Great! Both {candidate_name} and the {company_name} hiring team are now connected.
+
+Feel free to start the conversation. Remember:
+• Keep communication professional and respectful
+• Be clear about expectations and next steps
+• {candidate_name} is expecting a decision within 24 hours
+
+**Let's start the conversation!**
+"""
+
+# Templates for specific scenarios
+TECHNICAL_QUESTIONS_INTRO = """
+🧠 **Technical Validation Required**
+
+Hi {candidate_name}, {company_name} would like to learn more about your technical skills.
+
+Please answer the following {question_count} questions to proceed with your application:
+
+{questions_list}
+
+⏰ **Please respond within 2 hours** to keep your application active.
+
+Take your time to provide thoughtful answers. Quality is more important than speed!
+"""
+
+FOLLOW_UP_REMINDER = """
+⏰ **Friendly Reminder**
+
+Hi {candidate_name}, it's been {hours_passed} hours since {company_name} last messaged you.
+
+They're interested in moving forward but need your response to continue the process.
+
+**Last message from {company_name}:**
+"{last_employer_message}"
+
+Please respond when you have a chance!
+"""
+
+DEADLINE_WARNING = """
+⚠️ **24-Hour Deadline Approaching**
+
+Hi {candidate_name}, just a heads up that your 24-hour response window with {company_name} expires in {hours_remaining} hours.
+
+If you're still interested in the {position} position, please respond soon to keep your application active.
+
+**Need more time?** Let them know - most employers are flexible if you communicate!
+"""
+
+APPLICATION_EXPIRED = """
+⏰ **Application Window Closed**
+
+Hi {candidate_name}, the 24-hour response window for the {position} position at {company_name} has closed.
+
+**Don't worry!** This doesn't mean you're not qualified. Here are your options:
+
+1. **Message them directly** - They might still be interested
+2. **Apply to similar positions** - We have {similar_count} similar openings
+3. **Update your preferences** - Get better matches next time
+
+Would you like me to help you with any of these options?
+"""
+
+INTERVIEW_SCHEDULED = """
+🎉 **Interview Scheduled!**
+
+Congratulations {candidate_name}! {company_name} has scheduled an interview with you.
+
+📅 **Interview Details:**
+• Date: {interview_date}
+• Time: {interview_time}
+• Format: {interview_format}
+• Duration: {interview_duration}
+• Interviewer: {interviewer_name}
+
+📋 **What to expect:**
+{interview_agenda}
+
+🎯 **Preparation tips:**
+• Review the job description and company info
+• Prepare questions about the role and team
+• Test your tech setup (for video interviews)
+• Have examples of your work ready
+
+**Good luck! You've got this! 🚀**
+"""
+
+OFFER_RECEIVED = """
+🎊 **Job Offer Received!**
+
+Fantastic news {candidate_name}! {company_name} has extended you an offer for the {position} position.
+
+💼 **Offer Details:**
+• Position: {position}
+• Salary: {salary_offer}
+• Start Date: {start_date}
+• Employment Type: {employment_type}
+• Benefits: {benefits_summary}
+
+⏰ **Response Deadline:** {offer_deadline}
+
+📋 **Next Steps:**
+1. Review the full offer details
+2. Ask any questions you have
+3. Negotiate if needed
+4. Accept or decline by {offer_deadline}
+
+**Congratulations! This is a great achievement! 🎉**
+
+Would you like to discuss anything about the offer?
+"""
+
+REJECTION_NOTICE = """
+📝 **Application Update**
+
+Hi {candidate_name}, thank you for your interest in the {position} position at {company_name}.
+
+After careful consideration, they've decided to move forward with other candidates for this specific role.
+
+**This doesn't reflect on your qualifications!** Here's what we can do:
+
+1. **Similar opportunities** - We have {similar_count} similar positions available
+2. **Feedback** - {company_name} provided this feedback: "{feedback}"
+3. **Future opportunities** - Stay connected for future openings at {company_name}
+
+**Keep going!** The right opportunity is out there for someone with your skills.
+
+Would you like me to show you similar positions?
+"""
+
+# Automated responses for common questions
+AUTO_RESPONSES = {
+    "salary": """
+💰 **Salary Information**
+
+Based on the job posting for {position} at {company_name}:
+• Salary Range: {salary_range}
+• Benefits: {benefits}
+• Equity: {equity_info}
+
+For specific negotiations, please discuss directly with the hiring team. They're usually flexible for the right candidate!
+""",
+
+    "remote": """
+🏠 **Remote Work Policy**
+
+For the {position} position at {company_name}:
+• Remote Work: {remote_policy}
+• Office Location: {office_location}
+• Hybrid Options: {hybrid_info}
+
+Many companies are flexible on remote work arrangements - feel free to discuss your preferences with the hiring team!
+""",
+
+    "next_steps": """
+📋 **Next Steps in the Process**
+
+Here's what typically happens next:
+
+1. **Initial Review** (24 hours) - They review your application
+2. **Technical Questions** (if applicable) - Quick skills validation
+3. **Initial Interview** (1-2 days) - 30-45 minute conversation
+4. **Technical Interview** (if applicable) - Skills assessment
+5. **Final Interview** - Meet the team/manager
+6. **Offer Decision** - Usually within 1 week of final interview
+
+**Current Status:** {current_status}
+
+The hiring team will keep you updated on timeline and next steps!
+""",
+
+    "company_info": """
+🏢 **About {company_name}**
+
+{company_description}
+
+**Company Details:**
+• Industry: {industry}
+• Size: {company_size}
+• Founded: {founded_year}
+• Location: {headquarters}
+
+**Why candidates love working here:**
+{company_benefits}
+
+Want to know anything specific about the company culture or team?
+"""
+}
+
+# Error messages
+ERROR_MESSAGES = {
+    "session_expired": "Your session has expired. Please upload your CV again to start a new application process.",
+    "company_unavailable": "The hiring team is currently unavailable. Your message has been saved and they'll respond as soon as possible.",
+    "technical_error": "Sorry, there was a technical issue. Please try again or contact support if the problem persists.",
+    "rate_limit": "You're sending messages too quickly. Please wait a moment before sending another message.",
+    "message_too_long": "Your message is too long. Please keep messages under 1000 characters for better readability.",
+    "inappropriate_content": "Your message contains inappropriate content. Please keep communication professional.",
+    "system_maintenance": "The system is currently under maintenance. Please try again in a few minutes."
+}
+
+# Success messages
+SUCCESS_MESSAGES = {
+    "message_sent": "✅ Your message has been sent to {company_name}. They'll be notified immediately.",
+    "application_submitted": "🎉 Your application has been successfully submitted to {company_name}!",
+    "questions_answered": "✅ Your answers have been submitted. {company_name} will review them shortly.",
+    "interview_confirmed": "✅ Your interview with {company_name} has been confirmed for {interview_time}.",
+    "offer_accepted": "🎊 Congratulations! You've accepted the offer from {company_name}. Welcome to the team!",
+    "offer_declined": "✅ You've declined the offer from {company_name}. Thank you for your honesty."
+}
+
+# Context-aware greeting based on time and status
+CONTEXT_GREETINGS = {
+    "morning": "Good morning {name}! ☀️",
+    "afternoon": "Good afternoon {name}! 👋",
+    "evening": "Good evening {name}! 🌙",
+    "weekend": "Hope you're having a great weekend {name}! 😊",
+    "first_time": "Welcome to coBoarding {name}! 🚀",
+    "returning": "Welcome back {name}! 👋",
+    "urgent": "Hi {name}! You have urgent updates waiting! ⚡"
+}
+
+# Status-specific messages
+STATUS_MESSAGES = {
+    "cv_uploaded": """
+✅ **CV Successfully Processed**
+
+Great! I've analyzed your CV and found:
+• {skills_count} technical skills
+• {experience_years} years of experience
+• {education_count} education entries
+• {projects_count} projects/experiences
+
+**Next step:** Let's find you some great job matches! 🎯
+""",
+
+    "matches_found": """
+🎯 **Perfect Matches Found!**
+
+I found {match_count} companies looking for someone with your skills:
+
+{top_matches}
+
+**Ready to apply?** Click on any company to start the conversation!
+""",
+
+    "application_pending": """
+⏳ **Application in Progress**
+
+Your application to {company_name} for {position} is currently:
+• Status: {status}
+• Submitted: {submitted_time}
+• Response expected: Within {response_time}
+
+I'll notify you immediately when they respond! 📱
+""",
+
+    "multiple_applications": """
+📊 **Your Active Applications**
+
+You have {active_count} applications in progress:
+
+{application_list}
+
+**Tips for managing multiple applications:**
+• Respond quickly to show interest
+• Keep track of different company requirements
+• Be honest about your timeline with all parties
+""",
+
+    "no_matches": """
+🔍 **Let's Find Better Matches**
+
+I didn't find any perfect matches right now, but don't worry!
+
+**Let's improve your matches:**
+1. Add more skills to your profile
+2. Adjust your location preferences
+3. Consider different seniority levels
+4. Expand to related technologies
+
+**Or:** I can notify you when new positions are posted that match your profile.
+
+What would you like to do?
+"""
+}
+
+# Conversation starters for different scenarios
+CONVERSATION_STARTERS = {
+    "high_match": """
+🎯 **Excellent Match Alert!**
+
+{candidate_name}, you're a {match_score}% match for {company_name}!
+
+**Why this is perfect for you:**
+• They need: {required_skills}
+• You have: {matching_skills}
+• Experience level: Perfect fit
+• Location: {location_match}
+
+**Ready to start the conversation?** I can help you craft the perfect introduction message!
+""",
+
+    "skill_match": """
+💡 **Skills Match Found**
+
+{company_name} is looking for someone with your exact skillset:
+
+**Perfect skill overlap:**
+{skill_matches}
+
+**What makes you special:**
+{unique_strengths}
+
+**Want to stand out?** Mention your experience with {standout_skill} - they specifically mentioned needing this!
+""",
+
+    "culture_match": """
+🎭 **Culture Match Detected**
+
+Based on your profile, you'd fit perfectly with {company_name}'s culture:
+
+**Shared values:**
+{culture_matches}
+
+**What they offer:**
+{company_perks}
+
+**Pro tip:** Their team loves candidates who are passionate about {shared_interest}. Mention this in your intro!
+""",
+
+    "urgent_hiring": """
+⚡ **Urgent Hiring Opportunity**
+
+{company_name} needs to fill the {position} role FAST!
+
+**Why this is perfect timing:**
+• They're interviewing this week
+• Decision made within 48 hours
+• Start date: {start_date}
+• Competitive package due to urgency
+
+**Ready to fast-track your career?** Let's get you connected immediately!
+"""
+}
+
+# Help messages for common user questions
+HELP_MESSAGES = {
+    "how_it_works": """
+❓ **How coBoarding Works**
+
+1. **Upload CV** - AI analyzes your skills and experience
+2. **Get Matches** - We find companies looking for your skillset
+3. **Start Chatting** - Direct communication with hiring teams
+4. **Quick Decisions** - Employers respond within 24 hours
+5. **Get Hired** - Fast-track from application to offer
+
+**Key Benefits:**
+• No endless job board scrolling
+• Direct employer communication
+• 24-hour response guarantee
+• AI-powered perfect matching
+""",
+
+    "response_times": """
+⏰ **Response Time Expectations**
+
+**From Employers:**
+• Initial response: Within 24 hours (guaranteed)
+• Interview scheduling: 24-48 hours
+• Final decision: 3-5 business days
+
+**From You:**
+• Respond to employers: Within 24 hours (recommended)
+• Technical questions: Within 2 hours
+• Interview confirmation: Within 12 hours
+
+**Pro tip:** Quick responses show enthusiasm and professionalism!
+""",
+
+    "privacy_safety": """
+🔒 **Your Privacy & Safety**
+
+**Data Protection:**
+• All data deleted after 24 hours (GDPR compliant)
+• Employers only see what you share
+• No data sold to third parties
+• EU servers and encryption
+
+**Communication Safety:**
+• All chats are monitored for professionalism
+• Report inappropriate behavior instantly
+• Block/unblock companies anytime
+• Full conversation history available
+""",
+
+    "technical_support": """
+🛠️ **Technical Support**
+
+**Common Issues & Solutions:**
+
+**CV Upload Problems:**
+• Supported formats: PDF, DOCX, TXT
+• Max size: 10MB
+• Clear scan/good quality required
+
+**Chat Issues:**
+• Refresh page if messages don't load
+• Check internet connection
+• Clear browser cache if needed
+
+**Need Help?**
+• Email: support@coboarding.com
+• Response time: Within 2 hours
+• Phone support: Coming soon!
+"""
+}
+
+# Motivational messages for different stages
+MOTIVATIONAL_MESSAGES = {
+    "keep_going": [
+        "🚀 Every 'no' gets you closer to the perfect 'yes'!",
+        "💪 Your skills are valuable - the right company will recognize them!",
+        "⭐ Great opportunities often come when you least expect them!",
+        "🎯 Stay focused on your goals - you're making progress!",
+        "🌟 Your next career breakthrough could be one conversation away!"
+    ],
+
+    "interview_prep": [
+        "🎤 You've got the skills - now show your personality!",
+        "💡 Remember: they already like your CV, now they want to know YOU!",
+        "🏆 Confidence is key - you belong in that interview room!",
+        "🎯 Focus on what you can bring to their team!",
+        "⚡ Trust your experience - you've got this!"
+    ],
+
+    "offer_stage": [
+        "🎊 You did it! This is what hard work looks like!",
+        "💎 Your skills and perseverance have paid off!",
+        "🚀 Welcome to the next chapter of your career!",
+        "⭐ You earned this opportunity - congratulations!",
+        "🌟 Your future is looking bright!"
+    ]
+}
+
+# Seasonal/time-based messages
+SEASONAL_MESSAGES = {
+    "monday_motivation": "💪 New week, new opportunities! Let's make it count!",
+    "friday_energy": "🎉 Wrapping up the week strong! Perfect time for applications!",
+    "holiday_season": "🎄 Many companies are making end-of-year hires - great timing!",
+    "new_year": "🎆 New year, new career! Let's make this your breakthrough year!",
+    "summer": "☀️ Summer hiring is heating up! Companies are expanding their teams!",
+    "back_to_school": "📚 September is prime hiring season - companies are planning for Q4!"
+}
+
+# Emergency/system messages
+SYSTEM_MESSAGES = {
+    "maintenance_mode": """
+🔧 **System Maintenance**
+
+coBoarding is currently undergoing scheduled maintenance to improve your experience.
+
+**What's happening:**
+• Upgrading our AI matching algorithms
+• Improving response times
+• Adding new features
+
+**Expected completion:** {maintenance_end_time}
+
+**During maintenance:**
+• New applications: Temporarily disabled
+• Active chats: Continue normally
+• Employer responses: Slightly delayed
+
+Thank you for your patience! 🙏
+""",
+
+    "high_traffic": """
+⚡ **High Traffic Notice**
+
+We're experiencing high traffic due to increased hiring activity!
+
+**Current status:**
+• CV processing: +30 seconds delay
+• Matching: Normal speed
+• Chat: Normal speed
+• Notifications: Normal speed
+
+**Why this is good news:** More companies are actively hiring! 📈
+
+Everything is working normally, just a bit slower. Thanks for your patience!
+""",
+
+    "new_features": """
+🎉 **New Features Available!**
+
+We've just launched some exciting updates:
+
+✨ **What's New:**
+• Improved CV analysis accuracy
+• Better company matching algorithm
+• Enhanced chat experience
+• Faster notification delivery
+
+📱 **Coming Soon:**
+• Mobile app (beta testing)
+• Video interview integration
+• Advanced skill assessments
+• Company culture matching
+
+Keep using coBoarding to experience these improvements!
+"""
+}

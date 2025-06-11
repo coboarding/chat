@@ -493,7 +493,7 @@ class CVProcessor:
             data['name'] = re.sub(r'[^\w\s\-\.]', '', data['name']).strip()
         
         # Validate email
-        if data['email'] and not re.match(r'^[^@]+@[^@]+\.[^@]+, data['email']):
+        if data['email'] and not re.match(r'^[^@]+@[^@]+\.[^@]+$', data['email']):
             data['email'] = ''
         
         # Clean phone
@@ -541,7 +541,7 @@ class CVProcessor:
         """Clean and fix common JSON formatting issues"""
         # Remove markdown code blocks
         json_text = re.sub(r'```json\s*', '', json_text)
-        json_text = re.sub(r'```\s*, '', json_text)
+        json_text = re.sub(r'```\s*', '', json_text)
         
         # Remove leading/trailing whitespace
         json_text = json_text.strip()

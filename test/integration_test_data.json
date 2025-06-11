@@ -1,0 +1,83 @@
+{
+  "integration_test_scenarios": [
+    {
+      "name": "complete_application_flow",
+      "description": "End-to-end test of complete application process",
+      "steps": [
+        {
+          "step": 1,
+          "action": "upload_cv",
+          "data": {
+            "file": "sample_cv.pdf"
+          },
+          "expected": {
+            "session_id": "not_null",
+            "success": true
+          }
+        },
+        {
+          "step": 2,
+          "action": "match_jobs",
+          "data": {
+            "include_remote": true
+          },
+          "expected": {
+            "total_matches": "greater_than_0"
+          }
+        },
+        {
+          "step": 3,
+          "action": "send_chat_message",
+          "data": {
+            "message": "I'm interested in applying",
+            "company_id": "use_first_match"
+          },
+          "expected": {
+            "response": "not_empty"
+          }
+        },
+        {
+          "step": 4,
+          "action": "send_notification",
+          "data": {
+            "notification_type": "candidate_application"
+          },
+          "expected": {
+            "success": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "gdpr_compliance_test",
+      "description": "Test GDPR data retention and deletion",
+      "steps": [
+        {
+          "step": 1,
+          "action": "upload_cv",
+          "data": {
+            "file": "sample_cv.pdf"
+          }
+        },
+        {
+          "step": 2,
+          "action": "verify_data_exists",
+          "expected": {
+            "data_found": true
+          }
+        },
+        {
+          "step": 3,
+          "action": "wait_24_hours"
+        },
+        {
+          "step": 4,
+          "action": "verify_data_deleted",
+          "expected": {
+            "data_found": false
+          }
+        }
+      ]
+    }
+  ]
+}

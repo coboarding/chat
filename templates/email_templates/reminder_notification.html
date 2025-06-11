@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⏰ Response Reminder - {{ candidate_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 550px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+        .countdown {
+            background-color: #dc2626;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .content {
+            padding: 25px 20px;
+        }
+        .candidate-summary {
+            background-color: #fef3c7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏰ Response Reminder</h1>
+            <p>Don't lose this great candidate!</p>
+        </div>
+
+        <div class="countdown">
+            {{ hours_remaining }} hours remaining to respond
+        </div>
+
+        <div class="content">
+            <p>Hi there,</p>
+
+            <p>You received an application from <strong>{{ candidate_name }}</strong> for the <strong>{{ position }}</strong> position, and they're still waiting for your response.</p>
+
+            <div class="candidate-summary">
+                <strong>{{ candidate_name }}</strong> • {{ match_score }}% match<br>
+                {{ candidate_title }} • {{ candidate_experience }} years experience<br>
+                Key skills: {{ top_skills }}
+            </div>
+
+            <p>This candidate is actively job searching and expects a response within 24 hours. <strong>Quick responses lead to higher acceptance rates!</strong></p>
+
+            <div style="text-align: center;">
+                <a href="{{ respond_link }}" class="btn">
+                    💬 Respond Now
+                </a>
+            </div>
+
+            <p style="font-size: 14px; color: #6b7280; margin-top: 20px;">
+                After the 24-hour deadline, this candidate may accept other offers or lose interest.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
