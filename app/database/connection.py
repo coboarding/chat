@@ -630,6 +630,38 @@ async def update_candidate_data(session: AsyncSession, candidate_id: str, update
     return True
 
 
+async def update_application_status(session: AsyncSession, application_id: str, new_status: str, status_message: str = None) -> bool:
+    """
+    Update the status of an application
+    
+    Args:
+        session: Database session
+        application_id: ID of the application to update
+        new_status: New status to set
+        status_message: Optional message about the status change
+        
+    Returns:
+        bool: True if update was successful, False if application not found
+    """
+    from .models import Application, ApplicationStatus
+    from sqlalchemy.future import select
+    from datetime import datetime
+    
+    result = await session.execute(
+        select(Application).where(Application.id == application_id)
+    )
+    application = result.scalars().first()
+    
+    if not application:
+        return False
+        
+    application.status = ApplicationStatus(new_status)
+    application.status_message = status_message
+    application.updated_at = datetime.utcnow()
+    
+    return True
+
+
 async def get_application(session: AsyncSession, application_id: str):
     """
     Get an application by ID
