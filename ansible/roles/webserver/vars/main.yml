@@ -1,0 +1,4 @@
+---
+# Variables for webserver role
+server_name: localhost
+website_title: Ansible Demo Website
