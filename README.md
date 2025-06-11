@@ -24,6 +24,16 @@ coBoarding is a comprehensive "speed hiring" platform that connects tech talent 
 
 ## 🏗️ **Architecture Overview**
 
+### Ansible Automation
+
+The project includes an Ansible automation setup for infrastructure deployment and configuration management. The Ansible project is located in the `ansible/` directory and includes roles for webserver and database configuration.
+
+**Key Features:**
+- Role-based organization with webserver and database roles
+- No sudo privileges required for testing
+- Template-based configuration generation
+- Automated database schema initialization
+
 ```mermaid
 graph TB
     A[Job Seeker] --> B[CV Upload]
