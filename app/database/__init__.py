@@ -82,10 +82,15 @@ __all__ = [
     # Application operations
     'create_application',
     'get_application',
-    'update_application_status',
-    'get_applications_for_candidate',
     'get_applications_for_job_listing',
+    'get_applications_for_candidate',
+    'get_active_job_listings',
+    'get_pending_notifications',
+    'log_audit_event',
+    'record_notification',
+    'update_application_status',
     'get_overdue_applications',
+    'get_expired_job_listings',
     'get_candidate_applications',
     'get_application_by_session_and_job',
     

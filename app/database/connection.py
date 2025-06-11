@@ -772,6 +772,57 @@ async def get_application(session: AsyncSession, application_id: str):
     return result.scalars().first()
 
 
+async def get_expired_job_listings(
+    session: AsyncSession,
+    limit: int = 100,
+    offset: int = 0,
+    include_closed: bool = False
+) -> list:
+    """
+    Get job listings that have passed their deadline
+    
+    Args:
+        session: Database session
+        limit: Maximum number of job listings to return
+        offset: Number of job listings to skip
+        include_closed: Whether to include already closed/expired listings
+        
+    Returns:
+        list: List of expired JobListing objects
+    """
+    from .models import JobListing
+    from sqlalchemy.future import select
+    from sqlalchemy import and_, or_
+    from datetime import datetime
+    
+    # Build the base query
+    query = select(JobListing).where(
+        and_(
+            JobListing.deadline.is_not(None),
+            JobListing.deadline < datetime.utcnow()
+        )
+    )
+    
+    # Optionally filter out already closed/expired listings
+    if not include_closed:
+        query = query.where(
+            or_(
+                JobListing.status == 'active',
+                JobListing.status == 'published',
+                JobListing.status.is_(None)
+            )
+        )
+    
+    # Order by deadline (most recently expired first)
+    query = query.order_by(JobListing.deadline.desc())
+    
+    # Apply pagination
+    query = query.limit(limit).offset(offset)
+    
+    result = await session.execute(query)
+    return result.scalars().all()
+
+
 async def get_overdue_applications(
     session: AsyncSession,
     days_overdue: int = 7,
@@ -792,7 +843,7 @@ async def get_overdue_applications(
     """
     from .models import Application, JobListing, Candidate
     from sqlalchemy.future import select
-    from sqlalchemy import and_, or_, func, desc
+    from sqlalchemy import and_, or_, desc
     from datetime import datetime, timedelta
     
     # Calculate the cutoff date
@@ -1012,7 +1063,7 @@ async def get_overdue_applications(session: AsyncSession, days_overdue: int = 1,
     Returns:
         list: List of overdue applications
     """
-    from sqlalchemy import select, and_, func
+    from sqlalchemy import select, and_
     from datetime import datetime, timedelta
     from .models import Application, JobListing, Candidate
     
@@ -1041,6 +1092,148 @@ async def get_overdue_applications(session: AsyncSession, days_overdue: int = 1,
         
     except Exception as e:
         logger.error(f"Error fetching overdue applications: {str(e)}")
+        raise
+
+
+async def get_expired_job_listings(session: AsyncSession, limit: int = 100):
+    """
+    Retrieve job listings that have passed their deadline
+    
+    Args:
+        session: Database session
+        limit: Maximum number of job listings to return
+        
+    Returns:
+        list: List of expired job listings
+    """
+    from sqlalchemy import select, and_
+    from datetime import datetime
+    from .models import JobListing
+    
+    try:
+        current_time = datetime.utcnow()
+        
+        # Build the query
+        stmt = (
+            select(JobListing)
+            .where(
+                and_(
+                    JobListing.deadline.isnot(None),
+                    JobListing.deadline < current_time,
+                    JobListing.status == 'active'
+                )
+            )
+            .order_by(JobListing.deadline.desc())
+            .limit(limit)
+        )
+        
+        result = await session.execute(stmt)
+        return result.scalars().all()
+        
+    except Exception as e:
+        logger.error(f"Error fetching expired job listings: {str(e)}")
+        raise
+
+
+async def get_candidate_applications(session: AsyncSession, candidate_id: str, limit: int = 100, offset: int = 0):
+    """
+    Get all applications for a specific candidate with pagination
+    
+    Args:
+        session: Database session
+        candidate_id: ID of the candidate
+        limit: Maximum number of applications to return
+        offset: Number of applications to skip
+        
+    Returns:
+        list: List of applications with job listing details
+    """
+    from sqlalchemy import select
+    from .models import Application, JobListing
+    
+    try:
+        stmt = (
+            select(Application, JobListing)
+            .join(JobListing, Application.job_listing_id == JobListing.id)
+            .where(Application.candidate_id == candidate_id)
+            .order_by(Application.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        
+        result = await session.execute(stmt)
+        return [
+            {
+                'application': app,
+                'job_listing': job
+            }
+            for app, job in result.all()
+        ]
+        
+    except Exception as e:
+        logger.error(f"Error fetching applications for candidate {candidate_id}: {str(e)}")
+        raise
+
+
+async def get_application_by_session_and_job(session: AsyncSession, session_id: str, job_listing_id: str):
+    """
+    Get an application by session ID and job listing ID
+    
+    Args:
+        session: Database session
+        session_id: Session ID of the candidate
+        job_listing_id: ID of the job listing
+        
+    Returns:
+        Application or None: The application if found, None otherwise
+    """
+    from sqlalchemy import select, and_
+    from .models import Application, Candidate
+    
+    try:
+        # First, get the candidate ID from the session
+        stmt = (
+            select(Application)
+            .join(Candidate, Application.candidate_id == Candidate.id)
+            .where(
+                and_(
+                    Candidate.session_id == session_id,
+                    Application.job_listing_id == job_listing_id
+                )
+            )
+        )
+        
+        result = await session.execute(stmt)
+        return result.scalars().first()
+        
+    except Exception as e:
+        logger.error(
+            f"Error fetching application for session {session_id} and job {job_listing_id}: {str(e)}"
+        )
+        raise
+
+
+async def get_candidate_by_email(session: AsyncSession, email: str):
+    """
+    Get a candidate by their email address
+    
+    Args:
+        session: Database session
+        email: Email address of the candidate
+        
+    Returns:
+        Candidate or None: The candidate if found, None otherwise
+    """
+    from sqlalchemy import select
+    from .models import Candidate
+    
+    try:
+        stmt = select(Candidate).where(Candidate.email == email)
+        result = await session.execute(stmt)
+        return result.scalars().first()
+        
+    except Exception as e:
+        logger.error(f"Error fetching candidate by email {email}: {str(e)}")
         raise
 
 
