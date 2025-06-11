@@ -2,10 +2,12 @@
 # Main Ansible playbook that includes all roles
 - name: Web server configuration
   hosts: webservers
+  gather_facts: no
   roles:
     - webserver
 
 - name: Database server configuration
   hosts: dbservers
+  gather_facts: no
   roles:
     - database
