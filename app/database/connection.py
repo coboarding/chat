@@ -630,6 +630,50 @@ async def update_candidate_data(session: AsyncSession, candidate_id: str, update
     return True
 
 
+async def record_notification(
+    session: AsyncSession,
+    recipient_id: str,
+    notification_type: str,
+    title: str,
+    message: str,
+    status: str = 'pending',
+    metadata: dict = None
+) -> str:
+    """
+    Record a notification in the database
+    
+    Args:
+        session: Database session
+        recipient_id: ID of the recipient user
+        notification_type: Type of notification (email, sms, push, etc.)
+        title: Notification title
+        message: Notification message content
+        status: Initial status (default: 'pending')
+        metadata: Additional metadata as a dictionary
+        
+    Returns:
+        str: ID of the created notification
+    """
+    from .models import Notification
+    from datetime import datetime
+    
+    notification = Notification(
+        recipient_id=recipient_id,
+        notification_type=notification_type,
+        title=title,
+        message=message,
+        status=status,
+        metadata=metadata or {},
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    
+    session.add(notification)
+    await session.flush()
+    
+    return str(notification.id)
+
+
 async def update_application_status(session: AsyncSession, application_id: str, new_status: str, status_message: str = None) -> bool:
     """
     Update the status of an application

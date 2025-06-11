@@ -51,39 +51,87 @@ graph TB
 ## 🚀 **Quick Start**
 
 ### Prerequisites
-- **Docker** and **Docker Compose** installed
+- **Python 3.11+**
+- **Docker** and **Docker Compose** (optional, for containerized deployment)
 - **8GB+ RAM** (for local AI models)
-- **GPU support** (optional, improves performance)
+- **Tesseract OCR** (for CV processing)
+- **GPU support** (optional, improves AI performance)
 
 ### 1. Clone and Setup
 ```bash
 git clone https://github.com/your-org/coboarding.git
 cd coboarding
 
-# Copy environment template
-cp .env.example .env
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Edit configuration
-nano .env
+# Install system dependencies (Ubuntu/Debian)
+sudo apt-get update
+sudo apt-get install -y tesseract-ocr
+
+# Install Python dependencies
+pip install --upgrade pip
+pip install -r app/requirements.txt
+
+# Set up environment variables
+cp .env.example .env
+nano .env  # Edit configuration as needed
 ```
 
-### 2. Deploy with Docker
+### 2. Run the Application
+
+#### Option A: Using Make (Recommended)
 ```bash
-# Deploy complete platform
-./deploy.sh
+# Start the application
+make run
 
-# Monitor logs
-./logs.sh
+# Run tests
+make test
 
-# Stop services
-./stop.sh
+# Run with coverage report
+make cov
+
+# Format code
+make lint
+```
+
+#### Option B: Direct Execution
+```bash
+# Start the Streamlit app
+streamlit run app/main.py
+
+# Or run the FastAPI backend
+uvicorn app.api:app --reload
 ```
 
 ### 3. Access Platform
 - **Main App**: http://localhost:8501
 - **API Documentation**: http://localhost:8000/docs
-- **n8n Workflows**: http://localhost:5678 (admin/admin123)
-- **Monitoring**: http://localhost:3000 (with monitoring profile)
+- **API (Swagger UI)**: http://localhost:8000/redoc
+
+### 4. Development Workflow
+
+#### CV Processing
+```bash
+# Convert CV from Markdown to PDF
+make convert-cv INPUT=test/cv.md OUTPUT=test/cv.pdf
+
+# Or directly with Python
+python scripts/convert_cv.py test/cv.md test/cv.pdf
+```
+
+#### Docker Commands (Optional)
+```bash
+# Build and start containers
+make docker-up
+
+# View logs
+make docker-logs
+
+# Stop services
+make docker-down
+```
 
 ## 📁 **Project Structure**
 
