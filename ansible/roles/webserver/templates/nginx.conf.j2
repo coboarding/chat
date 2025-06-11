@@ -23,7 +23,7 @@ http {
         listen 80;
         server_name {{ server_name }};
 
-        root /tmp/www;
+        root {{ home_dir.stdout }}/ansible_demo/www;
         index index.html;
 
         location / {
