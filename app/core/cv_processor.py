@@ -146,9 +146,26 @@ class CVProcessor:
         try:
             # Write the uploaded file content to the temporary file
             content = uploaded_file.read()
-            if hasattr(content, 'decode'):
-                content = content.decode('utf-8')
-            temp_file.write(content if isinstance(content, bytes) else content.encode('utf-8'))
+            
+            # Handle different file types appropriately
+            if uploaded_file.type in ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
+                # For binary files like PDF and DOCX, write directly as bytes
+                if not isinstance(content, bytes):
+                    if hasattr(content, 'encode'):
+                        content = content.encode('utf-8')
+                temp_file.write(content)
+            else:
+                # For text files, try to decode if it's bytes
+                if isinstance(content, bytes):
+                    try:
+                        content = content.decode('utf-8')
+                    except UnicodeDecodeError:
+                        # If decoding fails, treat as binary
+                        temp_file.write(content)
+                        return Path(temp_file.name)
+                
+                # Write text content
+                temp_file.write(content if isinstance(content, bytes) else content.encode('utf-8'))
             return Path(temp_file.name)
         finally:
             temp_file.close()
@@ -285,8 +302,8 @@ class CVProcessor:
             
             # Check if we're running in a test environment with a mocked Ollama client
             if hasattr(self, 'ollama_client') and hasattr(self.ollama_client, 'chat'):
-                # Use the mock client if available (for unit tests)
-                response = await self.ollama_client.chat(
+                # Use the ollama client - note that chat() is not an async method
+                response = self.ollama_client.chat(
                     model='mistral',
                     messages=[{'role': 'user', 'content': prompt}]
                 )

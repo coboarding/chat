@@ -11,7 +11,8 @@ from typing import Dict, List, Optional
 # Core imports
 from app.core.cv_processor import CVProcessor
 from app.core.form_detector import FormDetector
-from app.core.automation_engine import AutomationEngine
+from app.core.automation_engine import AutomationEngine as BackgroundTaskAutomationEngine
+from app.core.form_detector import AutomationEngine as FormFillingAutomationEngine
 from app.core.chat_interface import ChatInterface
 from app.core.notification_service import NotificationService
 from app.database.models import CandidateSession, JobListing, Application
@@ -29,7 +30,8 @@ class coBoarding:
     def __init__(self):
         self.cv_processor = CVProcessor()
         self.form_detector = FormDetector()
-        self.automation_engine = AutomationEngine()
+        self.background_task_engine = BackgroundTaskAutomationEngine()
+        self.form_filling_engine = FormFillingAutomationEngine()
         self.chat = ChatInterface()
         self.notifications = NotificationService()
         self.gdpr = GDPRManager()
@@ -217,31 +219,41 @@ class coBoarding:
 
     def render_automation_panel(self):
         """Render form automation panel"""
-        st.sidebar.header("🤖 Automation Panel")
+        st.sidebar.header("🤖 Automated Application Submission")
+        
+        # URL input for form detection
+        target_url = st.sidebar.text_input("Target URL for form detection", "https://example.com")
         
         if st.sidebar.button("🔍 Detect Forms"):
             with st.spinner("Detecting forms on current page..."):
-                forms = asyncio.run(self.form_detector.detect_forms())
+                forms = asyncio.run(self.form_detector.detect_forms(url=target_url))
                 st.sidebar.success(f"Found {len(forms)} forms")
                 
-        if st.sidebar.button("📝 Auto-fill Forms"):
-            if st.session_state.cv_data:
-                with st.spinner("Auto-filling forms..."):
-                    results = asyncio.run(self.automation_engine.fill_forms(
-                        st.session_state.cv_data
-                    ))
-                    st.sidebar.success("Forms filled successfully!")
-            else:
-                st.sidebar.error("Please upload CV first")
+        if st.sidebar.button("Start Automation", key="start_automation_button"):
+            if not st.session_state.selected_companies:
+                st.warning("Please select at least one company to apply to.")
+                return
+
+            if not st.session_state.cv_data:
+                st.error("CV data not found. Please upload and process your CV first.")
+                return
+
+            results = asyncio.run(self.form_filling_engine.fill_forms(
+                cv_data=st.session_state.cv_data,
+                target_urls=[company['application_url'] for company in st.session_state.selected_companies]
+            ))
+            st.sidebar.success("Forms filled successfully!")
 
     def render_notifications_panel(self):
         """Render notifications panel"""
         st.sidebar.header("🔔 Notifications")
         
-        notifications = self.notifications.get_recent_notifications(
+        # Get notifications asynchronously
+        notifications = asyncio.run(self.notifications.get_recent_notifications(
             st.session_state.session_id
-        )
+        ))
         
+        # Now notifications is a list, not a coroutine
         for notif in notifications[-5:]:  # Show last 5
             st.sidebar.info(f"**{notif['type']}:** {notif['message']}")
 
