@@ -82,10 +82,10 @@ RUN python -m spacy download en_core_web_sm
 COPY . .
 
 # Expose ports
-EXPOSE 8501 8000
+EXPOSE 8502 8000
 
 # Start command
-CMD ["bash", "-c", "streamlit run main.py --server.port=8501 --server.address=0.0.0.0 & uvicorn api:app --host 0.0.0.0 --port 8000 & wait"]
+CMD ["bash", "-c", "streamlit run main.py --server.port=8502 --server.address=0.0.0.0 & uvicorn api:app --host 0.0.0.0 --port 8000 & wait"]
 EOF
 
 # Worker Dockerfile
@@ -683,7 +683,7 @@ docker-compose exec ollama ollama pull nomic-embed-text
 echo "✅ Deployment completed!"
 echo ""
 echo "🌐 Services available at:"
-echo "  - Main App: http://localhost:8501"
+echo "  - Main App: http://localhost:8502"
 echo "  - API: http://localhost:8000"
 echo "  - n8n: http://localhost:5678 (admin/admin123)"
 echo "  - Database: localhost:5432"
@@ -759,4 +759,4 @@ echo "  - Daily cleanup runs at 2 AM"
 echo "  - All communications logged for audit"
 echo ""
 echo "💡 Need help? Check the documentation or create an issue on GitHub"
-echo "    Platform will be available at http://localhost:8501 after deployment"
+echo "    Platform will be available at http://localhost:8502 after deployment"

@@ -1,0 +1,80 @@
+[
+  {
+    "id": "1",
+    "company": "TechStart Berlin",
+    "position": "Senior Python Developer",
+    "location": "Berlin, Germany",
+    "remote": true,
+    "requirements": ["Python", "Django", "PostgreSQL", "Docker", "AWS"],
+    "salary": "€60,000 - €80,000",
+    "urgent": true,
+    "description": "Join our fast-growing startup building the next generation of AI-powered applications. We need a senior Python developer who can work independently and mentor junior developers.",
+    "benefits": ["Remote work", "Equity package", "Learning budget", "Flexible hours"],
+    "notification_config": {
+      "slack_webhook": "",
+      "email": "hr@techstart.berlin",
+      "teams_webhook": "",
+      "whatsapp_number": ""
+    }
+  },
+  {
+    "id": "2",
+    "company": "AI Solutions Warsaw",
+    "position": "ML Engineer",
+    "location": "Warsaw, Poland",
+    "remote": true,
+    "requirements": ["Python", "TensorFlow", "PyTorch", "MLOps", "Docker"],
+    "salary": "€50,000 - €70,000",
+    "urgent": true,
+    "description": "Build and deploy machine learning models at scale. Work with cutting-edge AI technologies and contribute to products used by millions.",
+    "benefits": ["Remote work", "Conference budget", "Latest hardware", "Stock options"],
+    "notification_config": {
+      "email": "careers@aisolutions.pl"
+    }
+  },
+  {
+    "id": "3",
+    "company": "FinTech Amsterdam",
+    "position": "Full Stack Developer",
+    "location": "Amsterdam, Netherlands",
+    "remote": false,
+    "requirements": ["React", "Node.js", "TypeScript", "AWS", "MongoDB"],
+    "salary": "€65,000 - €85,000",
+    "urgent": false,
+    "description": "Join our mission to revolutionize financial services. Build scalable applications that handle millions of transactions daily.",
+    "benefits": ["Relocation assistance", "Health insurance", "Pension plan", "Bike allowance"],
+    "notification_config": {
+      "email": "jobs@fintech.amsterdam"
+    }
+  },
+  {
+    "id": "4",
+    "company": "Startup Krakow",
+    "position": "Frontend Developer",
+    "location": "Krakow, Poland",
+    "remote": true,
+    "requirements": ["React", "TypeScript", "Next.js", "Tailwind CSS"],
+    "salary": "€40,000 - €55,000",
+    "urgent": true,
+    "description": "Create beautiful and performant user interfaces for our SaaS platform. Work directly with designers and product managers.",
+    "benefits": ["Flexible hours", "Home office setup", "Unlimited vacation", "Team events"],
+    "notification_config": {
+      "email": "team@startup.krakow"
+    }
+  },
+  {
+    "id": "5",
+    "company": "DevOps Company Munich",
+    "position": "DevOps Engineer",
+    "location": "Munich, Germany",
+    "remote": true,
+    "requirements": ["Docker", "Kubernetes", "AWS", "Terraform", "Linux"],
+    "salary": "€70,000 - €90,000",
+    "urgent": false,
+    "description": "Build and maintain infrastructure for high-traffic applications. Implement CI/CD pipelines and ensure 99.9% uptime.",
+    "benefits": ["Remote work", "Company car", "Health insurance", "Training budget"],
+    "notification_config": {
+      "email": "hr@devops.munich"
+    }
+  }
+]
