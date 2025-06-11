@@ -27,10 +27,8 @@
     <div class="info">
         <h2>Server Information:</h2>
         <ul>
-            <li>Hostname: {{ ansible_hostname }}</li>
-            <li>OS: {{ ansible_distribution }} {{ ansible_distribution_version }}</li>
             <li>Environment: {{ env }}</li>
-            <li>Deployment Time: {{ ansible_date_time.iso8601 }}</li>
+            <li>Deployment Time: {% raw %}{{ ansible_date_time | default('now') }}{% endraw %}</li>
         </ul>
     </div>
 </body>
