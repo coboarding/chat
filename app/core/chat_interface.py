@@ -3,9 +3,12 @@ import asyncio
 import json
 import hashlib
 from datetime import datetime, timedelta
+import os
 from typing import Dict, List, Optional, Any
+
 import ollama
-import aioredis
+import redis
+from redis import asyncio as aioredis
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
