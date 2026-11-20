@@ -1,62 +1,62 @@
 # Core
-streamlit>=1.32.0
-fastapi>=0.109.0
-uvicorn[standard]>=0.27.0
-python-multipart>=0.0.6
+streamlit>=1.67.0
+fastapi>=0.109.2
+uvicorn[standard]>=0.27.1
+python-multipart>=0.0.34
 
 # Database
-sqlalchemy>=2.0.23
-alembic>=1.13.1
-psycopg2-binary>=2.9.9
+sqlalchemy>=2.1.9
+alembic>=1.20.1
+psycopg2-binary>=2.9.13
 aiosqlite>=0.19.0  # For SQLite support in async mode
 
 # AI and ML
-ollama>=0.1.7
-spacy>=3.7.4
-transformers>=4.38.0
-torch>=2.2.0
-numpy>=1.26.0
-pandas>=2.2.0
-sentence-transformers>=2.5.1
+ollama>=0.1.9
+spacy>=3.8.18
+transformers>=4.57.6
+torch>=2.15.0
+numpy>=1.26.4
+pandas>=2.3.3
+sentence-transformers>=2.7.0
 
 # Document Processing
 PyPDF2>=3.0.1
-python-docx>=1.1.0
-pytesseract>=0.3.10
-Pillow>=10.2.0
+python-docx>=1.2.0
+pytesseract>=0.3.13
+Pillow>=10.4.0
 pdf2image>=1.17.0
-WeasyPrint>=60.1
-markdown>=3.5.2
+WeasyPrint>=60.2
+markdown>=3.11.3
 
 # Web Automation
-playwright==1.37.0
-selenium>=4.18.1
-undetected-chromedriver>=3.5.4
+playwright==1.65.2
+selenium>=4.53.0
+undetected-chromedriver>=3.5.5
 
 # Computer Vision
-opencv-python-headless>=4.9.0.80
-easyocr>=1.7.1
+opencv-python-headless>=4.14.0.94
+easyocr>=1.7.2
 
 # Notifications
-requests>=2.31.0
+requests>=2.34.2
 python-telegram-bot>=20.8
 
 # Utilities
-python-dotenv>=1.0.1
-loguru>=0.7.2
-tenacity>=8.2.3
-httpx>=0.27.0
-jinja2>=3.1.3
-cryptography>=42.0.5
+python-dotenv>=1.2.4
+loguru>=0.7.3
+tenacity>=8.5.0
+httpx>=0.27.2
+jinja2>=3.1.6
+cryptography>=42.0.8
 
 # Testing
-pytest>=8.0.0
-pytest-asyncio>=0.23.5
+pytest>=8.4.2
+pytest-asyncio>=0.23.8
 pytest-cov>=4.1.0
 
 # Development
-black>=24.3.0
+black>=24.10.0
 isort>=5.13.2
-mypy>=1.8.0
-flake8>=7.0.0
-pre-commit>=3.6.0
+mypy>=1.20.2
+flake8>=7.5.0
+pre-commit>=3.8.0
