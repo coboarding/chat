@@ -1,16 +1,16 @@
 # Project dependencies
 asyncio
-aioredis>=2.0.0
-psycopg2-binary>=2.9.0
-sqlalchemy>=2.0.0
+aioredis>=2.0.1
+psycopg2-binary>=2.9.13
+sqlalchemy>=2.1.9
 playwright>=1.40.0
-selenium>=4.15.0
+selenium>=4.53.0
 botright>=0.4.0
-ollama>=0.1.7
-requests>=2.31.0
-python-dotenv>=1.0.0
-loguru>=0.7.2
+ollama>=0.1.9
+requests>=2.34.2
+python-dotenv>=1.2.4
+loguru>=0.7.3
 opencv-python>=4.8.0
-Pillow>=10.0.0
-numpy>=1.24.0
-tenacity>=8.2.3
+Pillow>=10.4.0
+numpy>=1.26.4
+tenacity>=8.5.0
